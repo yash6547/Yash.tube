@@ -3,560 +3,743 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Manual MCQ Creator — Upload + Crop + Manual</title>
-
-<!-- CropperJS CSS -->
-<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
-
+<title>Beast Manual Quiz Builder — One-by-One | Timer | 200 Q</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#071428; --card:#0b1720; --accent:#06b6d4; --muted:#9fb4c8; --ok:#10b981; --danger:#ef4444;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,#041226 0%, #071428 100%);color:#e6f0f6}
-  .wrap{max-width:1100px;margin:18px auto;padding:16px}
-  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  h1{margin:0;font-size:20px}
-  .sub{color:var(--muted);font-size:13px}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:12px;border-radius:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.03)}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .col{display:flex;flex-direction:column;gap:8px}
-  button{background:var(--accent);color:#012;border:0;padding:10px 12px;border-radius:10px;cursor:pointer;font-weight:700}
-  .ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px 10px;border-radius:8px}
-  .icon-btn{background:rgba(255,255,255,0.03);border-radius:10px;padding:8px 10px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  .small{font-size:13px;color:var(--muted)}
-  .hidden{display:none!important}
-  .preview-img{max-width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-  .crop-area{max-width:820px;margin:10px auto}
-  textarea,input[type="text"],input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-  .question-card{padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);margin-bottom:10px;background:rgba(255,255,255,0.01)}
-  .opt-row{display:flex;gap:8px;align-items:center;margin-top:6px}
-  .btn-danger{background:var(--danger);color:#fff}
-  .muted{color:var(--muted)}
-  footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
-  .flex-between{display:flex;justify-content:space-between;align-items:center}
-  .option-input{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
-  .small-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:var(--muted)}
-  .badge{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:999px;color:var(--muted);font-weight:700}
-  @media(max-width:720px){ .wrap{padding:8px} .row{justify-content:center} }
+:root{
+  --bg:#071026; --card:#07182b; --muted:#9fb4c8; --accent:#06b6d4; --accent2:#10b981; --danger:#ef4444; --glass: rgba(255,255,255,0.03);
+  --glass-2: rgba(255,255,255,0.02);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#020617 0%, var(--bg) 100%);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6f3fb}
+a{color:inherit}
+.wrap{max-width:1100px;margin:18px auto;padding:18px}
+.header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.title{display:flex;flex-direction:column}
+.title h1{margin:0;font-size:20px;letter-spacing:-0.2px}
+.title .sub{color:var(--muted);font-size:13px;margin-top:6px}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:linear-gradient(180deg,var(--accent) 0%, #05a7bd 100%);color:#021; padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;box-shadow:0 8px 20px rgba(6,182,212,0.08)}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600;padding:8px 12px}
+.badge{background:var(--glass);padding:6px 10px;border-radius:999px;font-weight:700;color:var(--muted);font-size:13px}
+.panel{background:linear-gradient(180deg,var(--glass) 0%, var(--glass-2) 100%);padding:12px;border-radius:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.03)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.col{display:flex;flex-direction:column;gap:8px}
+.small{font-size:13px;color:var(--muted)}
+.hidden{display:none!important}
+.input, textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit;font-size:14px}
+.textarea{min-height:72px}
+.qcard{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));transition:transform .18s ease,box-shadow .18s}
+.qcard:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(2,8,23,0.6)}
+.opt-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.opt-input{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
+.small-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:var(--muted)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.counter{font-weight:800;color:var(--muted);font-size:14px}
+.controls-bottom{display:flex;gap:8px;align-items:center}
+.center{text-align:center}
+
+/* One-by-one display (attempt) */
+.attempt-wrap{display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.attempt-card{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+.progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease}
+
+/* timer styles */
+.timer{font-weight:800;color:var(--danger);font-size:18px}
+
+/* animated buttons */
+.btn-float{position:fixed;right:18px;bottom:18px;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 14px 40px rgba(3,105,178,0.12)}
+.anim-fade{animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* modal */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:9999}
+.modal-card{width:100%;max-width:900px;background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+
+/* tiny helpers */
+.flex{display:flex}
+.space-between{justify-content:space-between;align-items:center}
+.right{margin-left:auto}
+.pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+.note{font-size:13px;color:var(--muted);margin-top:6px}
+footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:820px){ .wrap{padding:12px} .header{flex-direction:column;align-items:flex-start} }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div>
-      <h1>✍️ Manual MCQ Creator</h1>
-      <div class="sub">Upload image → Crop & rotate (reference) → Type questions manually → Attempt & Export</div>
-    </div>
-    <div class="row">
-      <label class="ghost" style="cursor:pointer">
-        📁 Upload Image
-        <input id="fileInput" type="file" accept="image/*" style="display:none">
-      </label>
-      <button id="clearImage" class="ghost">Clear Image</button>
-      <button id="exportJSON" class="ghost">Export JSON</button>
-      <button id="importJSON" class="ghost">Import JSON</button>
-      <button id="exportPDF" class="ghost">Export PDF</button>
-      <button id="saveLocal" class="ghost">Save Locally</button>
-      <button id="loadLocal" class="ghost">Load Local</button>
-    </div>
-  </header>
 
-  <!-- Image preview and crop -->
-  <div id="imagePanel" class="panel hidden">
-    <div class="flex-between">
-      <div style="font-weight:700">Reference Image (Crop area)</div>
-      <div class="small muted">Crop area ko adjust karo — phir "Apply Crop" kro.</div>
+  <div class="header">
+    <div class="title">
+      <h1>⚡ Beast Manual Quiz Builder</h1>
+      <div class="sub">Pure manual — add up to <strong>200</strong> questions. 2–5 options per Q. One-by-one attempt. Timer & auto-submit. Modern UI.</div>
     </div>
-    <div style="height:10px"></div>
-    <div class="crop-area">
-      <img id="cropImage" src="" alt="To crop" style="max-width:100%;display:block" />
-    </div>
-    <div class="row" style="justify-content:center;margin-top:8px">
-      <button id="rotateLeft" class="icon-btn">⟲ Rotate Left</button>
-      <button id="rotateRight" class="icon-btn">⟳ Rotate Right</button>
-      <button id="flipHorizontal" class="icon-btn">↔ Flip</button>
-      <button id="applyCrop" class="btn">Apply Crop</button>
-      <button id="cancelCrop" class="ghost">Cancel</button>
-    </div>
-    <div style="height:10px"></div>
-    <div id="croppedPreviewWrap" class="hidden">
-      <div style="font-weight:700">Cropped Preview</div>
-      <img id="croppedPreview" class="preview-img" src="" alt="cropped preview" />
+
+    <div class="controls">
+      <div class="badge">Max Q: <strong id="maxQbadge">200</strong></div>
+      <div class="badge">Current: <strong id="currQcount">0</strong></div>
+      <button class="btn" id="newQbtn">+ New Question</button>
+      <button class="btn ghost" id="startTestBtn">▶ Start Test</button>
+      <button class="btn ghost" id="saveBtn">💾 Save</button>
+      <button class="btn ghost" id="loadBtn">📂 Load</button>
+      <button class="btn ghost" id="exportBtn">⬇ Export JSON</button>
+      <button class="btn ghost" id="importBtn">⬆ Import JSON</button>
     </div>
   </div>
 
-  <!-- Manual question input -->
-  <div id="editorPanel" class="panel">
-    <div class="flex-between">
-      <div style="font-weight:700">Quiz Editor</div>
+  <!-- Editor Panel -->
+  <div class="panel" id="editorPanel">
+    <div class="topbar">
       <div class="row">
-        <div class="badge small muted">Questions: <span id="qcount">0</span></div>
-        <button id="addQuestion" class="ghost">+ Add Question</button>
+        <div style="font-weight:800">Quiz Editor</div>
+        <div class="small" style="margin-left:8px">Create & edit questions. Use per-question marks or global defaults below.</div>
+      </div>
+      <div class="controls-bottom">
+        <label class="small muted">Global Marks: <input id="globalMarks" class="input" type="number" value="1" min="0" step="0.25" style="width:90px;margin-left:8px"></label>
+        <label class="small muted">Global Negative: <input id="globalNeg" class="input" type="number" value="0" min="0" step="0.25" style="width:90px;margin-left:8px"></label>
+        <label class="small muted">Time (mins): <input id="globalTime" class="input" type="number" value="5" min="0" max="999" style="width:90px;margin-left:8px"></label>
       </div>
     </div>
 
-    <div style="height:10px"></div>
-    <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
-      <div style="flex:1;min-width:280px">
-        <div id="questionsWrap"></div>
+    <div style="height:12px"></div>
 
-        <div class="row" style="justify-content:flex-end;margin-top:8px">
-          <div class="col" style="max-width:420px">
-            <div style="font-weight:700">Scoring (global default)</div>
-            <div class="row">
-              <label class="small muted">Marks / Q: <input id="marksPerQ" type="number" value="1" min="0" step="0.25"></label>
-              <label class="small muted">Negative / wrong: <input id="negPerQ" type="number" value="0" min="0" step="0.25"></label>
-            </div>
-          </div>
+    <!-- Single question editor (shows only one at a time in editor also) -->
+    <div id="singleEditorWrap" class="qcard anim-fade">
+      <div class="flex space-between">
+        <div>
+          <div style="font-weight:800">Question <span id="editorQnum">1</span></div>
+          <div class="small muted">Type question text and options. Options: min 2, max 5.</div>
         </div>
-
-        <div style="height:12px"></div>
-        <div class="row" style="justify-content:flex-end;gap:8px">
-          <button id="attemptMode" class="btn">Attempt Quiz</button>
-          <button id="clearQuiz" class="ghost">Clear All</button>
+        <div class="row">
+          <button class="btn ghost" id="prevEditor">◀ Prev</button>
+          <button class="btn ghost" id="nextEditor">Next ▶</button>
+          <button class="btn ghost" id="duplicateQ">Duplicate</button>
+          <button class="btn ghost" id="deleteQ">Delete</button>
         </div>
       </div>
 
-      <div style="width:320px">
-        <div style="font-weight:700">Image Reference</div>
-        <div class="small muted">The cropped image below is just a reference — type questions manually on left.</div>
-        <div style="height:8px"></div>
-        <div style="border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;background:rgba(255,255,255,0.01)">
-          <img id="refImage" class="preview-img" src="" alt="ref" />
-          <div style="height:8px"></div>
-          <button id="useRefClear" class="ghost">Clear Reference</button>
-        </div>
+      <div style="height:8px"></div>
+
+      <div>
+        <textarea id="qText" class="textarea input" placeholder="Type question here..."></textarea>
+      </div>
+
+      <div style="height:8px"></div>
+
+      <div id="optionsArea"></div>
+
+      <div style="height:8px"></div>
+
+      <div class="row">
+        <label class="small-muted">Per-Q Marks: <input id="perQMarks" type="number" class="input" placeholder="Use global if blank" style="width:120px"></label>
+        <label class="small-muted">Per-Q Negative: <input id="perQNeg" type="number" class="input" placeholder="Use global if blank" style="width:120px"></label>
+        <label class="small muted">Flag: <input id="flagQ" type="checkbox" style="margin-left:6px"></label>
+        <div class="right small muted">Options: <span id="optCount">0</span>/5</div>
+      </div>
+
+      <div style="height:8px"></div>
+
+      <div class="row">
+        <button class="btn" id="addOptBtn">+ Add Option</button>
+        <button class="btn ghost" id="shuffleOptions">Shuffle Options</button>
+        <button class="btn ghost" id="saveQbtn">Save Question</button>
       </div>
     </div>
   </div>
 
-  <!-- Attempt Panel -->
-  <div id="attemptPanel" class="panel hidden">
-    <div class="flex-between">
-      <div style="font-weight:700">Attempt Quiz</div>
-      <div class="small muted">Marks per Q: <span id="marksSummary"></span> | Negative: <span id="negSummary"></span></div>
-    </div>
+  <!-- Review / List of questions summary (collapsible) -->
+  <div id="listPanel" class="panel">
+    <div style="font-weight:800">Questions Overview</div>
+    <div class="small muted" style="margin-top:6px">Click any item to edit that question. You can also reorder questions by drag (future).</div>
     <div style="height:8px"></div>
-    <div id="attemptQuestions"></div>
-
-    <div style="height:12px"></div>
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div class="small muted">Questions: <span id="attemptCount">0</span></div>
-      <div class="row">
-        <button id="submitAttempt" class="btn">Submit</button>
-        <button id="backToEdit" class="ghost">Back to Edit</button>
-      </div>
-    </div>
-
-    <div style="height:12px"></div>
-    <div id="resultBox" class="hidden question-card"></div>
+    <div id="listWrap"></div>
   </div>
 
-  <footer>Manual mode — koi automatic detection nahi. Type with dhyaan, test, export. Bol agar kuch aur add karna hai.</footer>
+  <!-- Attempt Modal -->
+  <div id="attemptModal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-card">
+      <div class="flex space-between">
+        <div>
+          <div style="font-weight:900;font-size:18px">Attempt Quiz</div>
+          <div class="small muted">One question at a time. Timer will auto-submit when time ends.</div>
+        </div>
+        <div class="row">
+          <div class="timer small" id="timeLeft">00:00</div>
+          <button class="btn ghost" id="endEarly">End & Submit</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="progress"><i id="progBar"></i></div>
+      <div style="height:12px"></div>
+
+      <div id="attemptCard" class="attempt-card"></div>
+
+      <div style="height:12px"></div>
+      <div class="row" style="justify-content:space-between">
+        <button class="btn ghost" id="prevAttempt">◀ Prev</button>
+        <div class="row">
+          <button class="btn ghost" id="markReview">Flag/Review</button>
+          <button class="btn ghost" id="nextAttempt">Next ▶</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn" id="submitAttemptBtn">Submit Test</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="small muted">Built for Yash-style manual testing. Enjoy. Need changes — bol de.</footer>
 </div>
 
-<!-- libs -->
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-<!-- html2pdf for PDF export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-
 <script>
-/* ======= App State ======= */
-let cropper = null;
-let croppedDataURL = null;
-let quiz = { title: "Manual Quiz", questions: [] };
+/* =========================
+   App State & Constants
+   ========================= */
+const MAX_Q = 200; // per user request
+let quiz = { title:"Manual Quiz", questions: [] };
+let currentIndex = 0; // editor current index
+let attemptIndex = 0; // attempt current index
+let attemptAnswers = {}; // { index: 'A' }
+let attemptFlags = {}; // flagged items
+let timer = null;
+let totalSeconds = 0;
+let remainingSeconds = 0;
+let isAttempting = false;
 
-/* ======= Elements ======= */
-const fileInput = document.getElementById('fileInput');
-const imagePanel = document.getElementById('imagePanel');
-const cropImage = document.getElementById('cropImage');
-const rotateLeft = document.getElementById('rotateLeft');
-const rotateRight = document.getElementById('rotateRight');
-const flipHorizontal = document.getElementById('flipHorizontal');
-const applyCrop = document.getElementById('applyCrop');
-const cancelCrop = document.getElementById('cancelCrop');
-const croppedPreviewWrap = document.getElementById('croppedPreviewWrap');
-const croppedPreview = document.getElementById('croppedPreview');
+/* =========================
+   DOM refs
+   ========================= */
+const maxQbadge = document.getElementById('maxQbadge');
+const currQcount = document.getElementById('currQcount');
 
-const editorPanel = document.getElementById('editorPanel');
-const addQuestionBtn = document.getElementById('addQuestion');
-const questionsWrap = document.getElementById('questionsWrap');
-const qcount = document.getElementById('qcount');
-const marksPerQ = document.getElementById('marksPerQ');
-const negPerQ = document.getElementById('negPerQ');
+const newQbtn = document.getElementById('newQbtn');
+const startTestBtn = document.getElementById('startTestBtn');
+const saveBtn = document.getElementById('saveBtn');
+const loadBtn = document.getElementById('loadBtn');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
 
-const refImage = document.getElementById('refImage');
-const useRefClear = document.getElementById('useRefClear');
+const globalMarks = document.getElementById('globalMarks');
+const globalNeg = document.getElementById('globalNeg');
+const globalTime = document.getElementById('globalTime');
 
-const attemptModeBtn = document.getElementById('attemptMode');
-const attemptPanel = document.getElementById('attemptPanel');
-const attemptQuestions = document.getElementById('attemptQuestions');
-const marksSummary = document.getElementById('marksSummary');
-const negSummary = document.getElementById('negSummary');
-const submitAttempt = document.getElementById('submitAttempt');
-const backToEdit = document.getElementById('backToEdit');
-const attemptCount = document.getElementById('attemptCount');
-const resultBox = document.getElementById('resultBox');
+const editorQnum = document.getElementById('editorQnum');
+const qText = document.getElementById('qText');
+const optionsArea = document.getElementById('optionsArea');
+const perQMarks = document.getElementById('perQMarks');
+const perQNeg = document.getElementById('perQNeg');
+const flagQ = document.getElementById('flagQ');
+const addOptBtn = document.getElementById('addOptBtn');
+const saveQbtn = document.getElementById('saveQbtn');
+const deleteQ = document.getElementById('deleteQ');
+const prevEditor = document.getElementById('prevEditor');
+const nextEditor = document.getElementById('nextEditor');
+const duplicateQ = document.getElementById('duplicateQ');
+const optCount = document.getElementById('optCount');
+const shuffleOptionsBtn = document.getElementById('shuffleOptions');
 
-const exportJSON = document.getElementById('exportJSON');
-const importJSON = document.getElementById('importJSON');
-const exportPDF = document.getElementById('exportPDF');
-const clearImageBtn = document.getElementById('clearImage');
-const saveLocal = document.getElementById('saveLocal');
-const loadLocal = document.getElementById('loadLocal');
+const listWrap = document.getElementById('listWrap');
 
-/* ======= File upload and Cropper ======= */
-fileInput.addEventListener('change', (e)=>{
-  const f = e.target.files[0];
-  if (!f) return;
-  const reader = new FileReader();
-  reader.onload = ()=> {
-    cropImage.src = reader.result;
-    imagePanel.classList.remove('hidden');
-    // init cropper
-    setTimeout(()=> {
-      if (cropper) { cropper.destroy(); cropper = null; }
-      cropper = new Cropper(cropImage, {
-        viewMode: 1,
-        autoCropArea: 0.9,
-        movable: true,
-        zoomable: true,
-        rotatable: true,
-        responsive: true,
-        background: false
-      });
-    }, 100);
-  };
-  reader.readAsDataURL(f);
-});
+const attemptModal = document.getElementById('attemptModal');
+const attemptCard = document.getElementById('attemptCard');
+const timeLeft = document.getElementById('timeLeft');
+const progBar = document.getElementById('progBar');
+const prevAttempt = document.getElementById('prevAttempt');
+const nextAttempt = document.getElementById('nextAttempt');
+const submitAttemptBtn = document.getElementById('submitAttemptBtn');
+const endEarly = document.getElementById('endEarly');
+const markReview = document.getElementById('markReview');
 
-// cropper controls
-rotateLeft.addEventListener('click', ()=> cropper && cropper.rotate(-90));
-rotateRight.addEventListener('click', ()=> cropper && cropper.rotate(90));
-flipHorizontal.addEventListener('click', ()=> {
-  if (!cropper) return;
-  const data = cropper.getImageData();
-  cropper.scaleX(- (data.scaleX || 1));
-});
+/* =========================
+   Helpers
+   ========================= */
+function uid(prefix='id'){ return prefix + '_' + Date.now().toString(36).slice(3) + Math.random().toString(36).slice(2,6); }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function formatTime(sec){
+  if (sec < 0) sec = 0;
+  const m = Math.floor(sec/60), s = sec%60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+function updateCounts(){ currQcount.textContent = quiz.questions.length; maxQbadge.textContent = MAX_Q; }
 
-cancelCrop.addEventListener('click', ()=>{
-  if (cropper) { cropper.destroy(); cropper=null; }
-  imagePanel.classList.add('hidden');
-  fileInput.value = '';
-  croppedDataURL = null;
-  croppedPreviewWrap.classList.add('hidden');
-  refImage.src = '';
-});
-
-// apply crop
-applyCrop.addEventListener('click', ()=>{
-  if (!cropper) return alert('Crop area ready kar ke Apply karo.');
-  const canvas = cropper.getCroppedCanvas({imageSmoothingQuality:'high', maxWidth:2000, maxHeight:2000});
-  croppedDataURL = canvas.toDataURL('image/jpeg', 0.95);
-  croppedPreview.src = croppedDataURL;
-  croppedPreviewWrap.classList.remove('hidden');
-  refImage.src = croppedDataURL;
-  // destroy cropper UI
-  cropper.destroy(); cropper = null;
-  imagePanel.classList.add('hidden');
-});
-
-/* ======= Quiz Editor: Manual add/edit/delete ======= */
-function createEmptyQuestion() {
+/* =========================
+   Question Model Helpers
+   ========================= */
+function createEmptyQuestion(){
   return {
-    id: 'q'+Date.now()+Math.random().toString(36).slice(2,6),
-    text: 'New question — edit here',
+    id: uid('q'),
+    text: '',
     options: [
-      { id: 'o1', label: 'A', text: 'Option A' },
-      { id: 'o2', label: 'B', text: 'Option B' },
-      { id: 'o3', label: 'C', text: 'Option C' }
+      { id: uid('o'), label:'A', text: '' },
+      { id: uid('o'), label:'B', text: '' }
     ],
-    correct: null,
-    marks: null, // if null -> use global
-    negative: null
+    correct: null, // label like 'A'
+    marks: null,
+    negative: null,
+    flagged: false
   };
 }
 
-function renderEditor() {
-  questionsWrap.innerHTML = '';
-  quiz.questions.forEach((q, idx) => {
-    const card = document.createElement('div');
-    card.className = 'question-card';
-    card.dataset.qid = q.id;
-    card.innerHTML = `
-      <div class="flex-between">
-        <div style="font-weight:700">Q${idx+1}</div>
-        <div class="row">
-          <button class="icon-btn edit-q">Edit</button>
-          <button class="icon-btn add-opt">+Opt</button>
-          <button class="icon-btn del-q">Del</button>
-        </div>
-      </div>
-      <div style="margin-top:8px">
-        <textarea class="qtext">${escapeHtml(q.text)}</textarea>
-      </div>
-      <div class="opts-area" style="margin-top:8px"></div>
-      <div style="margin-top:8px" class="small muted">Correct: <span class="corr">${q.correct || 'Not set'}</span> | Marks: <input class="small marks-input" type="number" value="${q.marks ?? ''}" placeholder="global"></div>
+function clampOptions(q){
+  if (q.options.length < 2) {
+    while (q.options.length < 2) q.options.push({ id:uid('o'), label: String.fromCharCode(65 + q.options.length), text: '' });
+  }
+  if (q.options.length > 5) q.options = q.options.slice(0,5);
+  // ensure labels
+  q.options.forEach((o,i)=> o.label = String.fromCharCode(65+i));
+}
+
+/* =========================
+   Rendering Editor (single Q)
+   ========================= */
+function renderEditorAt(index){
+  if (quiz.questions.length === 0) {
+    // create starter question
+    quiz.questions.push(createEmptyQuestion());
+  }
+  currentIndex = clamp(index, 0, quiz.questions.length-1);
+  const q = quiz.questions[currentIndex];
+  editorQnum.textContent = currentIndex + 1;
+  qText.value = q.text;
+  perQMarks.value = q.marks !== null ? q.marks : '';
+  perQNeg.value = q.negative !== null ? q.negative : '';
+  flagQ.checked = q.flagged || false;
+  renderOptions(q);
+  updateCounts();
+  renderList();
+  highlightListItem(currentIndex);
+}
+
+function renderOptions(q){
+  clampOptions(q);
+  optionsArea.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const row = document.createElement('div');
+    row.className = 'opt-row';
+    row.dataset.optid = opt.id;
+    row.innerHTML = `
+      <input type="radio" name="corr" ${q.correct===opt.label ? 'checked' : ''} value="${opt.label}">
+      <input class="opt-input" data-optid="${opt.id}" value="${escapeHtml(opt.text)}" placeholder="Option ${opt.label} text">
+      <input class="small-ghost" style="width:54px;text-align:center" value="${opt.label}">
+      <button class="btn ghost del-opt">Del</button>
     `;
-    questionsWrap.appendChild(card);
+    optionsArea.appendChild(row);
 
-    const optsArea = card.querySelector('.opts-area');
-
-    function renderOptions() {
-      optsArea.innerHTML = '';
-      q.options.forEach((opt, oi) => {
-        const row = document.createElement('div');
-        row.className = 'opt-row';
-        row.innerHTML = `
-          <input type="radio" name="corr_${q.id}" ${q.correct===opt.label ? 'checked' : ''} value="${opt.label}">
-          <input class="option-input opt-text" data-optid="${opt.id}" value="${escapeHtml(opt.text)}">
-          <input style="width:60px" class="small-ghost opt-label" value="${opt.label}">
-          <button class="ghost del-opt">Del</button>
-        `;
-        optsArea.appendChild(row);
-
-        // listeners
-        row.querySelector('input[type=radio]').addEventListener('change', ()=>{
-          q.correct = opt.label;
-          card.querySelector('.corr').textContent = q.correct;
-        });
-        row.querySelector('.opt-text').addEventListener('input', (e)=> { opt.text = e.target.value; });
-        row.querySelector('.opt-label').addEventListener('input', (e)=>{
-          opt.label = e.target.value.toUpperCase().slice(0,2) || opt.label;
-          renderOptions();
-        });
-        row.querySelector('.del-opt').addEventListener('click', ()=>{
-          if (q.options.length<=2) return alert('Minimum 2 options required');
-          q.options = q.options.filter(o=>o.id!==opt.id);
-          renderOptions();
-        });
-      });
-    }
-    renderOptions();
-
-    // edit q text
-    card.querySelector('.qtext').addEventListener('input', (e)=> q.text = e.target.value);
-    // add opt
-    card.querySelector('.add-opt').addEventListener('click', ()=>{
-      const nextLabel = String.fromCharCode(65 + q.options.length);
-      q.options.push({ id: 'o'+Math.random().toString(36).slice(2,6), label: nextLabel, text: 'New option' });
-      renderOptions();
+    // listeners
+    row.querySelector('input[type=radio]').addEventListener('change', ()=>{
+      q.correct = opt.label;
+      renderList();
     });
-    // delete q
-    card.querySelector('.del-q').addEventListener('click', ()=>{
-      if (!confirm('Delete this question?')) return;
-      quiz.questions = quiz.questions.filter(x=>x.id !== q.id);
-      renderEditor();
+    row.querySelector('.opt-input').addEventListener('input', (e)=> {
+      opt.text = e.target.value;
+      renderList();
     });
-    // edit q quick
-    card.querySelector('.edit-q').addEventListener('click', ()=>{
-      const newq = prompt('Edit question text', q.text);
-      if (newq!=null) { q.text = newq; card.querySelector('.qtext').value = q.text; }
+    row.querySelector('.small-ghost').addEventListener('input', (e)=>{
+      opt.label = e.target.value.toUpperCase().slice(0,2) || opt.label;
+      // re-label all options to keep A,B,C in order
+      q.options.forEach((oo,i)=> oo.label = String.fromCharCode(65+i));
+      renderOptions(q);
+      renderList();
     });
-    // marks input
-    card.querySelector('.marks-input').addEventListener('input', (e)=> {
-      const v = e.target.value;
-      q.marks = v === '' ? null : parseFloat(v);
+    row.querySelector('.del-opt').addEventListener('click', ()=>{
+      if (q.options.length <= 2) { alert('Minimum 2 options required'); return; }
+      q.options = q.options.filter(o=>o.id !== opt.id);
+      if (q.correct === opt.label) q.correct = null;
+      renderOptions(q);
+      renderList();
     });
   });
-
-  qcount.textContent = quiz.questions.length;
+  optCount.textContent = q.options.length;
 }
 
-/* add question */
-addQuestionBtn.addEventListener('click', ()=>{
+/* =========================
+   Editor Controls (buttons)
+   ========================= */
+newQbtn.addEventListener('click', ()=>{
+  if (quiz.questions.length >= MAX_Q) {
+    alert('Too many questions — cannot add more than ' + MAX_Q + '.');
+    return;
+  }
   quiz.questions.push(createEmptyQuestion());
-  renderEditor();
+  renderEditorAt(quiz.questions.length - 1);
 });
 
-/* clear quiz */
-document.getElementById('clearQuiz').addEventListener('click', ()=>{
-  if (!confirm('Clear entire quiz?')) return;
-  quiz.questions = [];
-  renderEditor();
+document.getElementById('saveQbtn').addEventListener('click', ()=>{
+  saveCurrentEditor();
+  alert('Question saved.');
 });
 
-/* remove reference */
-useRefClear.addEventListener('click', ()=>{
-  refImage.src = '';
-  croppedDataURL = null;
-  croppedPreviewWrap.classList.add('hidden');
-});
-
-/* clear image button */
-clearImageBtn.addEventListener('click', ()=>{
-  cropImage.src = '';
-  refImage.src = '';
-  croppedDataURL = null;
-  croppedPreviewWrap.classList.add('hidden');
-  imagePanel.classList.add('hidden');
-  fileInput.value = '';
-});
-
-/* ======= Attempt Mode ======= */
-attemptModeBtn.addEventListener('click', ()=>{
-  if (!quiz.questions.length) return alert('Koi question nahi hai. Add karo pehle.');
-  editorPanel.classList.add('hidden');
-  attemptPanel.classList.remove('hidden');
-  renderAttempt();
-});
-
-backToEdit.addEventListener('click', ()=>{
-  attemptPanel.classList.add('hidden');
-  editorPanel.classList.remove('hidden');
-  resultBox.classList.add('hidden');
-});
-
-/* render attempt questions */
-function renderAttempt(){
-  attemptQuestions.innerHTML = '';
-  marksSummary.textContent = marksPerQ.value;
-  negSummary.textContent = negPerQ.value;
-  attemptCount.textContent = quiz.questions.length;
-  quiz.questions.forEach((q, idx) => {
-    const card = document.createElement('div');
-    card.className = 'question-card';
-    card.innerHTML = `<div style="font-weight:700">Q${idx+1}. ${escapeHtml(q.text)}</div><div style="margin-top:8px" class="opts-area"></div>`;
-    attemptQuestions.appendChild(card);
-    const optsArea = card.querySelector('.opts-area');
-    q.options.forEach(opt=>{
-      const lab = document.createElement('label');
-      lab.className = 'opt-row';
-      lab.style.marginTop = '6px';
-      lab.innerHTML = `<input type="radio" name="ans_${idx}" value="${opt.label}"> <div style="margin-left:8px">${escapeHtml(opt.label)}. ${escapeHtml(opt.text)}</div>`;
-      optsArea.appendChild(lab);
-    });
+function saveCurrentEditor(){
+  const q = quiz.questions[currentIndex];
+  q.text = qText.value.trim();
+  q.marks = perQMarks.value === '' ? null : parseFloat(perQMarks.value);
+  q.negative = perQNeg.value === '' ? null : parseFloat(perQNeg.value);
+  q.flagged = flagQ.checked;
+  // ensure each option syncs
+  const rows = optionsArea.querySelectorAll('.opt-row');
+  const newOpts = [];
+  rows.forEach((row, idx)=>{
+    const id = row.dataset.optid || uid('o');
+    const label = String.fromCharCode(65 + idx);
+    const text = row.querySelector('.opt-input').value;
+    newOpts.push({ id, label, text });
   });
+  q.options = newOpts;
+  // if previously correct but label changed, try to keep same index
+  if (q.correct){
+    if (!q.options.some(o=>o.label === q.correct)) q.correct = null;
+  }
+  clampOptions(q);
+  renderList();
 }
 
-/* submit attempt & scoring */
-submitAttempt.addEventListener('click', ()=>{
-  let score = 0, correct=0, wrong=0, unattempted=0;
-  const globalMarks = parseFloat(marksPerQ.value) || 0;
-  const globalNeg = parseFloat(negPerQ.value) || 0;
-
-  quiz.questions.forEach((q, idx)=>{
-    const sel = document.querySelector(`input[name="ans_${idx}"]:checked`);
-    if (!sel) { unattempted++; return; }
-    const chosen = sel.value;
-    const marks = (q.marks != null) ? q.marks : globalMarks;
-    const neg = (q.negative != null) ? q.negative : globalNeg;
-    if (q.correct && chosen === q.correct) {
-      correct++;
-      score += marks;
-    } else {
-      wrong++;
-      score -= neg;
-    }
-  });
-
-  resultBox.classList.remove('hidden');
-  resultBox.innerHTML = `<div style="font-weight:800">Result</div>
-    <div style="margin-top:8px">Score: <strong>${score}</strong></div>
-    <div class="small muted" style="margin-top:6px">Correct: ${correct} | Wrong: ${wrong} | Unattempted: ${unattempted} | Total: ${quiz.questions.length}</div>`;
-  // scroll to result
-  resultBox.scrollIntoView({behavior:'smooth'});
+/* Prev/Next editor */
+prevEditor.addEventListener('click', ()=>{
+  saveCurrentEditor();
+  if (currentIndex > 0) renderEditorAt(currentIndex - 1);
+});
+nextEditor.addEventListener('click', ()=>{
+  saveCurrentEditor();
+  if (currentIndex < quiz.questions.length - 1) renderEditorAt(currentIndex + 1);
 });
 
-/* ======= Export / Import / Save ======= */
-exportJSON.addEventListener('click', ()=>{
-  const out = { meta:{ marksPerQ:marksPerQ.value, negPerQ:negPerQ.value, exportedAt:new Date().toISOString() }, quiz };
+/* Duplicate question */
+duplicateQ.addEventListener('click', ()=>{
+  if (quiz.questions.length >= MAX_Q) { alert('Max questions reached'); return; }
+  saveCurrentEditor();
+  const q = quiz.questions[currentIndex];
+  const copy = JSON.parse(JSON.stringify(q));
+  copy.id = uid('q');
+  // ensure unique ids for options
+  copy.options = copy.options.map(o=>({ id: uid('o'), label: o.label, text: o.text }));
+  quiz.questions.splice(currentIndex+1, 0, copy);
+  renderEditorAt(currentIndex + 1);
+});
+
+/* Delete question */
+deleteQ.addEventListener('click', ()=>{
+  if (!confirm('Delete this question?')) return;
+  quiz.questions.splice(currentIndex,1);
+  if (quiz.questions.length === 0) quiz.questions.push(createEmptyQuestion());
+  renderEditorAt(clamp(currentIndex,0,quiz.questions.length-1));
+});
+
+/* Add Option */
+addOptBtn.addEventListener('click', ()=>{
+  const q = quiz.questions[currentIndex];
+  if (q.options.length >= 5) return alert('Maximum 5 options allowed.');
+  q.options.push({ id: uid('o'), label: String.fromCharCode(65 + q.options.length), text: '' });
+  renderOptions(q);
+});
+
+/* Shuffle options */
+shuffleOptionsBtn.addEventListener('click', ()=>{
+  const q = quiz.questions[currentIndex];
+  // simple Fisher-Yates on options array but maintain labels after shuffle
+  for (let i = q.options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+  }
+  // relabel
+  q.options.forEach((o,i)=> o.label = String.fromCharCode(65+i));
+  // reset correct (user should check)
+  q.correct = null;
+  renderOptions(q);
+  renderList();
+});
+
+/* Save Button (full quiz save to local storage) */
+saveBtn.addEventListener('click', ()=>{
+  saveCurrentEditor();
+  const payload = { meta:{ savedAt: new Date().toISOString(), globalMarks: parseFloat(globalMarks.value), globalNeg: parseFloat(globalNeg.value), globalTime: parseInt(globalTime.value,10) }, quiz };
+  localStorage.setItem('beast_manual_quiz', JSON.stringify(payload));
+  alert('Quiz saved locally.');
+});
+
+/* Load */
+loadBtn.addEventListener('click', ()=>{
+  const raw = localStorage.getItem('beast_manual_quiz');
+  if (!raw) { alert('No saved quiz in localStorage.'); return; }
+  try {
+    const obj = JSON.parse(raw);
+    if (obj.quiz) quiz = obj.quiz;
+    if (!quiz.questions || !quiz.questions.length) quiz.questions = [createEmptyQuestion()];
+    renderEditorAt(0);
+    alert('Loaded saved quiz.');
+  } catch(e){ alert('Load failed'); }
+});
+
+/* Export JSON */
+exportBtn.addEventListener('click', ()=>{
+  saveCurrentEditor();
+  const out = { meta:{ createdAt: new Date().toISOString(), globalMarks: parseFloat(globalMarks.value), globalNeg: parseFloat(globalNeg.value), globalTime: parseInt(globalTime.value,10)}, quiz };
   const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'manual_quiz.json'; a.click();
+  const a = document.createElement('a');
+  a.href = url; a.download = 'manual_quiz_export.json'; a.click();
   URL.revokeObjectURL(url);
 });
 
-importJSON.addEventListener('click', ()=>{
+/* Import JSON */
+importBtn.addEventListener('click', ()=>{
   const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json';
   inp.onchange = async (e)=>{
-    const f = e.target.files[0]; if(!f) return;
+    const f = e.target.files[0]; if (!f) return;
     const txt = await f.text();
     try {
       const obj = JSON.parse(txt);
-      if (obj.quiz) {
-        quiz = obj.quiz;
-        if (obj.meta) { marksPerQ.value = obj.meta.marksPerQ || marksPerQ.value; negPerQ.value = obj.meta.negPerQ || negPerQ.value; }
-      } else if (obj.questions) { quiz = obj; } // fallback
-      renderEditor();
-      alert('Quiz imported.');
-    } catch(err){ alert('Import failed: ' + err.message); }
+      if (obj.quiz) quiz = obj.quiz;
+      else if (obj.questions) quiz = obj;
+      else alert('Invalid format');
+      renderEditorAt(0);
+      alert('Imported quiz.');
+    } catch(err){ alert('Import failed'); }
   };
   inp.click();
 });
 
-/* Save / Load localStorage */
-saveLocal.addEventListener('click', ()=>{
-  const payload = { quiz, meta:{ marksPerQ:marksPerQ.value, negPerQ:negPerQ.value, savedAt:new Date().toISOString() } };
-  localStorage.setItem('manual_quiz_v1', JSON.stringify(payload));
-  alert('Saved locally.');
-});
-loadLocal.addEventListener('click', ()=>{
-  const raw = localStorage.getItem('manual_quiz_v1');
-  if (!raw) return alert('No saved quiz found.');
-  try {
-    const obj = JSON.parse(raw);
-    quiz = obj.quiz || quiz;
-    if (obj.meta) {
-      marksPerQ.value = obj.meta.marksPerQ || marksPerQ.value;
-      negPerQ.value = obj.meta.negPerQ || negPerQ.value;
-    }
-    renderEditor();
-    alert('Loaded from local.');
-  } catch(e){ alert('Load failed.'); }
-});
-
-/* Export PDF: build a printable sheet of questions */
-exportPDF.addEventListener('click', ()=>{
-  if (!quiz.questions.length) return alert('No questions to export.');
-  const el = document.createElement('div');
-  el.style.padding='20px';
-  el.style.fontFamily='Arial, sans-serif';
-  const title = document.createElement('h2'); title.textContent = quiz.title; el.appendChild(title);
-  quiz.questions.forEach((q, i)=>{
-    const qdiv = document.createElement('div');
-    qdiv.style.marginBottom='12px';
-    const qh = document.createElement('div'); qh.style.fontWeight='700'; qh.textContent = `${i+1}. ${q.text}`;
-    qdiv.appendChild(qh);
-    q.options.forEach(opt=>{
-      const od = document.createElement('div'); od.textContent = `${opt.label}. ${opt.text}`; od.style.marginLeft='12px';
-      qdiv.appendChild(od);
-    });
-    el.appendChild(qdiv);
+/* Render questions list */
+function renderList(){
+  listWrap.innerHTML = '';
+  quiz.questions.forEach((q,i)=>{
+    const el = document.createElement('div');
+    el.className = 'qcard';
+    el.style.marginTop = '8px';
+    const opts = q.options.map(o=>`${o.label}. ${o.text}`).join(' | ');
+    el.innerHTML = `
+      <div class="flex space-between">
+        <div><strong>Q${i+1}.</strong> <span class="small muted" style="margin-left:8px">${q.text ? (q.text.length>70 ? q.text.slice(0,70)+'...' : q.text) : '<i>[No text]</i>'}</span></div>
+        <div class="row">
+          <div class="small muted">${q.correct ? 'Ans: ' + q.correct : 'No Ans'}</div>
+          <div style="width:10px"></div>
+          <button class="btn ghost" data-edit="${i}">Edit</button>
+        </div>
+      </div>
+      <div class="small muted" style="margin-top:6px">${opts}</div>
+    `;
+    listWrap.appendChild(el);
   });
-  // use html2pdf
-  const opt = { margin:0.5, filename: 'manual_quiz.pdf', image:{type:'jpeg',quality:0.95}, html2canvas:{scale:1}, jsPDF:{unit:'in',format:'a4',orientation:'portrait'} };
-  html2pdf().set(opt).from(el).save();
-});
-
-/* Utility escape */
-function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* initial editor render */
-renderEditor();
-
-/* Helpful: auto add sample question if none */
-if (!quiz.questions.length) {
-  quiz.questions.push(createSampleQuestion());
-  renderEditor();
+  currQcount.textContent = quiz.questions.length;
+  // attach edit listeners
+  listWrap.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      const idx = parseInt(e.currentTarget.getAttribute('data-edit'),10);
+      renderEditorAt(idx);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
 }
 
-function createSampleQuestion(){
-  return {
-    id: 'q_sample',
+/* highlight list item */
+function highlightListItem(idx){
+  const cards = listWrap.querySelectorAll('.qcard');
+  cards.forEach((c,i)=> c.style.boxShadow = (i===idx) ? '0 10px 30px rgba(6,182,212,0.06)' : 'none');
+}
+
+/* =========================
+   Attempt Flow
+   ========================= */
+startTestBtn.addEventListener('click', ()=>{
+  if (!quiz.questions.length) return alert('No questions to attempt. Add some first.');
+  saveCurrentEditor();
+  // prepare attempt state
+  attemptAnswers = {};
+  attemptFlags = {};
+  attemptIndex = 0;
+  // compute totalSeconds from globalTime (minutes)
+  const mins = parseInt(globalTime.value,10) || 0;
+  totalSeconds = mins * 60;
+  remainingSeconds = totalSeconds;
+  isAttempting = true;
+  openAttemptModal();
+});
+
+function openAttemptModal(){
+  attemptModal.classList.remove('hidden');
+  renderAttemptCard();
+  startTimer();
+  updateProgressBar();
+}
+
+function closeAttemptModal(){
+  attemptModal.classList.add('hidden');
+  stopTimer();
+  isAttempting = false;
+}
+
+function renderAttemptCard(){
+  const q = quiz.questions[attemptIndex];
+  attemptCard.innerHTML = '';
+  const card = document.createElement('div');
+  card.innerHTML = `<div style="font-weight:800">Q${attemptIndex+1}. ${q.text || '<i>[No text]</i>'}</div>
+    <div style="margin-top:12px" id="attOpts"></div>
+    <div style="height:8px"></div>
+    <div class="small muted">Marks: ${q.marks != null ? q.marks : globalMarks.value} | Negative: ${q.negative != null ? q.negative : globalNeg.value}</div>`;
+  attemptCard.appendChild(card);
+  const optsWrap = document.getElementById('attOpts');
+  q.options.forEach(opt=>{
+    const lab = document.createElement('label');
+    lab.className = 'opt-row';
+    lab.innerHTML = `<input type="radio" name="attAnswer" value="${opt.label}" ${attemptAnswers[attemptIndex]===opt.label ? 'checked' : ''}> <div style="margin-left:8px">${opt.label}. ${opt.text}</div>`;
+    optsWrap.appendChild(lab);
+  });
+  // radio change
+  optsWrap.querySelectorAll('input[name="attAnswer"]').forEach(r=> r.addEventListener('change', (e)=>{
+    attemptAnswers[attemptIndex] = e.target.value;
+    updateProgressBar();
+  }));
+  // mark review indicator
+  if (attemptFlags[attemptIndex]) attemptCard.style.border = '2px solid rgba(255,165,0,0.12)'; else attemptCard.style.border = '';
+  // show timer
+  timeLeft.textContent = formatTime(remainingSeconds);
+  progBar.style.width = Math.round(((attemptIndex+1)/quiz.questions.length) * 100) + '%';
+}
+
+/* Next / Prev attempt */
+nextAttempt.addEventListener('click', ()=>{
+  saveAttemptAnswer();
+  if (attemptIndex < quiz.questions.length - 1) attemptIndex++;
+  renderAttemptCard();
+});
+prevAttempt.addEventListener('click', ()=>{
+  saveAttemptAnswer();
+  if (attemptIndex > 0) attemptIndex--;
+  renderAttemptCard();
+});
+function saveAttemptAnswer(){
+  // attemptAnswers updated via change events
+  updateProgressBar();
+}
+
+/* mark flag */
+markReview.addEventListener('click', ()=>{
+  attemptFlags[attemptIndex] = !attemptFlags[attemptIndex];
+  renderAttemptCard();
+});
+
+/* Submit attempt */
+submitAttemptBtn.addEventListener('click', ()=>{
+  if (!confirm('Submit test now?')) return;
+  finalizeAttempt();
+});
+
+/* End early (auto-submit) */
+endEarly.addEventListener('click', ()=>{
+  if (!confirm('End test and submit?')) return;
+  finalizeAttempt();
+});
+
+/* Timer */
+function startTimer(){
+  stopTimer();
+  if (totalSeconds <= 0) {
+    // no timer
+    timeLeft.textContent = 'No time';
+    return;
+  }
+  remainingSeconds = totalSeconds;
+  timeLeft.textContent = formatTime(remainingSeconds);
+  timer = setInterval(()=>{
+    remainingSeconds--;
+    timeLeft.textContent = formatTime(remainingSeconds);
+    if (remainingSeconds <= 0) {
+      finalizeAttempt(); // auto-submit
+    }
+  }, 1000);
+}
+function stopTimer(){ if (timer) clearInterval(timer); timer=null; }
+
+/* progress update */
+function updateProgressBar(){
+  const answered = Object.keys(attemptAnswers).length;
+  const percent = Math.round((answered / quiz.questions.length) * 100);
+  progBar.style.width = percent + '%';
+}
+
+/* finalize attempt: compute score, show report, close modal */
+function finalizeAttempt(){
+  stopTimer();
+  // compute score
+  let score = 0, correct=0, wrong=0, unattempted=0;
+  const gMarks = parseFloat(globalMarks.value) || 0;
+  const gNeg = parseFloat(globalNeg.value) || 0;
+  quiz.questions.forEach((q, idx)=>{
+    const given = attemptAnswers[idx];
+    if (!given) { unattempted++; return; }
+    if (q.correct && given === q.correct) {
+      correct++;
+      const marks = (q.marks != null) ? q.marks : gMarks;
+      score += parseFloat(marks);
+    } else {
+      wrong++;
+      const neg = (q.negative != null) ? q.negative : gNeg;
+      score -= parseFloat(neg);
+    }
+  });
+  // show result in modal card
+  attemptCard.innerHTML = `<div style="font-weight:900">Result</div>
+    <div style="margin-top:12px">Score: <strong>${score}</strong></div>
+    <div class="small muted" style="margin-top:8px">Correct: ${correct} | Wrong: ${wrong} | Unattempted: ${unattempted} | Total: ${quiz.questions.length}</div>
+    <div style="height:10px"></div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn" id="closeResultBtn">Close</button>
+      <button class="btn ghost" id="reviewAnswersBtn">Review Answers</button>
+    </div>`;
+  document.getElementById('closeResultBtn').addEventListener('click', ()=>{
+    closeAttemptModal();
+  });
+  document.getElementById('reviewAnswersBtn').addEventListener('click', ()=>{
+    // show review: open list with answers marked (for simplicity, navigate to list)
+    closeAttemptModal();
+    alert('Review mode — open editor and check answers (you can compare).');
+  });
+  isAttempting = false;
+}
+
+/* =========================
+   Keyboard Shortcuts
+   ========================= */
+document.addEventListener('keydown', (e)=>{
+  if (isAttempting && (e.key === 'ArrowRight' || e.key.toLowerCase()==='d')) { nextAttempt.click(); }
+  else if (isAttempting && (e.key === 'ArrowLeft' || e.key.toLowerCase()==='a')) { prevAttempt.click(); }
+  else if (!isAttempting && e.key === 'n') { newQbtn.click(); }
+  else if (!isAttempting && e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveBtn.click(); }
+});
+
+/* =========================
+   Misc Utilities
+   ========================= */
+function escapeHtml(s){ if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* =========================
+   Init
+   ========================= */
+(function init(){
+  // start with one sample question
+  quiz.questions.push({
+    id: uid('q'),
     text: 'Sample: Which gas do plants absorb during photosynthesis?',
     options: [
-      { id:'o1', label:'A', text:'Oxygen' },
-      { id:'o2', label:'B', text:'Carbon Dioxide' },
-      { id:'o3', label:'C', text:'Nitrogen' },
-      { id:'o4', label:'D', text:'Hydrogen' }
+      { id: uid('o'), label: 'A', text: 'Oxygen' },
+      { id: uid('o'), label: 'B', text: 'Carbon Dioxide' },
+      { id: uid('o'), label: 'C', text: 'Nitrogen' }
     ],
     correct: 'B',
     marks: null,
-    negative: null
-  };
-}
+    negative: null,
+    flagged: false
+  });
+  updateCounts();
+  renderEditorAt(0);
+  renderList();
+})();
 
 </script>
 </body>
