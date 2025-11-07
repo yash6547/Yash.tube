@@ -1,791 +1,290 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Image → MCQ Quiz Maker (Camera + Upload + Crop + OCR + Attempt)</title>
-
-<!-- CropperJS CSS -->
-<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
-
-<style>
-  :root{
-    --bg:#0f1724; --card:#0b1220; --accent:#06b6d4; --muted:#94a3b8; --success:#10b981;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071029 0%, #051022 100%);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  .wrap{max-width:1100px;margin:18px auto;padding:14px;color:#e6eef6}
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  h1{font-size:18px;margin:0}
-  .controls{display:flex;gap:8px;flex-wrap:wrap}
-  button, .btn{background:var(--accent);color:#012; border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
-  .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.03)}
-  .center{text-align:center}
-  video{width:100%;height:auto;border-radius:10px; background:#000}
-  #cameraContainer{position:relative}
-  .camera-full{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px}
-  .camera-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:10000}
-  .icon-btn{background:rgba(255,255,255,0.06);color:#e6eef6;border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,0.02);cursor:pointer}
-  .capture-btn{background:var(--success);color:#012;padding:14px 18px;border-radius:999px;border:0;font-weight:800;box-shadow:0 8px 24px rgba(3,105,78,0.14)}
-  .small{font-size:13px;color:var(--muted)}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .col{display:flex;flex-direction:column;gap:8px}
-  .hidden{display:none!important}
-  img.preview{max-width:100%;border-radius:10px}
-  /* Cropper area */
-  .crop-area{max-width:720px;max-height:80vh;overflow:hidden;background:#000;border-radius:10px;margin:0 auto}
-  .editor-controls{display:flex;gap:8px;justify-content:center;margin-top:8px}
-  input[type="number"]{padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
-  .question-card{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);margin-bottom:8px}
-  label.inline{display:flex;gap:8px;align-items:center}
-  .controls-bottom{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-  .badge{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;font-weight:700;color:var(--muted)}
-  textarea{min-height:80px;width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
-  .muted{color:var(--muted)}
-  .resultbox{padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(16,185,129,0.06), rgba(6,182,212,0.02));text-align:center;font-weight:700}
-  .flex-between{display:flex;justify-content:space-between;align-items:center}
-  .option-input{width:calc(100% - 90px);padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-  .small-ghost{background:transparent;border:1px dashed rgba(255,255,255,0.03);padding:6px;border-radius:6px;color:var(--muted)}
-  footer{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
-  @media(max-width:720px){ .wrap{padding:8px} .controls-bottom{justify-content:center} }
-</style>
+  <meta charset="utf-8" />
+  <title>Image → MCQ Quiz (Prototype)</title>
+  <style>
+    body{font-family: Arial, Helvetica, sans-serif; max-width:1000px; margin:20px auto; padding:10px;}
+    h1{font-size:20px;margin-bottom:8px}
+    #controls{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+    canvas{display:none}
+    .question{border:1px solid #ddd;padding:10px;margin-bottom:8px;border-radius:6px}
+    .opts{margin-top:6px}
+    .opts label{display:block;margin:4px 0}
+    .small{font-size:13px;color:#555}
+    button{padding:8px 10px;border-radius:6px;border:0;background:#007bff;color:#fff;cursor:pointer}
+    button.gray{background:#6c757d}
+    pre{background:#f6f6f6;padding:10px;border-radius:6px;overflow:auto}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>📸 Image → MCQ Quiz Maker</h1>
-      <div class="small muted">Camera / Upload → Crop & Rotate → OCR → Auto-parse → Edit → Attempt → Export</div>
-    </div>
-    <div class="controls">
-      <button id="startBtn" class="btn">Start (Camera / Upload)</button>
-      <button id="importBtn" class="ghost">Import JSON</button>
-      <button id="exportBtn" class="ghost">Export Quiz JSON</button>
-    </div>
-  </header>
-
-  <!-- Step: Choice Modal -->
-  <div id="choicePanel" class="panel center">
-    <div style="font-weight:700;margin-bottom:8px">Choose Image Source</div>
-    <div class="row" style="justify-content:center">
-      <button id="chooseCamera" class="btn">📷 Use Camera</button>
-      <button id="chooseUpload" class="ghost" style="color:var(--muted)">📁 Upload File</button>
-      <input id="fileInput" type="file" accept="image/*" class="hidden" />
-    </div>
-    <div class="small muted" style="margin-top:8px">Note: Camera will open only when you choose "Use Camera".</div>
+  <h1>Image → MCQ Quiz (Prototype)</h1>
+  <div id="controls">
+    <input id="file" type="file" accept="image/*"/>
+    <button id="run">Detect & Make Quiz</button>
+    <button id="export" class="gray">Export JSON</button>
+    <span class="small">Tip: clear, well-lit photos with printed text give best results.</span>
   </div>
 
-  <!-- Camera Fullscreen Modal -->
-  <div id="cameraModal" class="camera-full hidden" aria-hidden="true">
-    <div class="camera-top">
-      <div class="row">
-        <button id="closeCam" class="icon-btn">✖ Close</button>
-        <div class="badge small muted">Camera Mode</div>
-      </div>
-      <div class="row">
-        <button id="flipCam" class="icon-btn">🔁 Flip</button>
-        <button id="toggleTorch" class="icon-btn">🔦 Torch</button>
-      </div>
-    </div>
+  <div id="status" class="small"></div>
+  <canvas id="cv"></canvas>
 
-    <div style="width:100%;max-width:900px;">
-      <div id="cameraContainer" style="position:relative">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="camCanvas" class="hidden"></canvas>
-      </div>
-      <div style="height:12px"></div>
-      <div class="row" style="justify-content:center;align-items:center">
-        <button id="captureBtn" class="capture-btn">● Capture</button>
-      </div>
-      <div style="height:18px"></div>
-      <div class="small muted center">Tip: keep phone parallel to book page, good light for better OCR.</div>
-    </div>
-  </div>
+  <div id="quiz"></div>
 
-  <!-- Image preview + confirm -->
-  <div id="previewPanel" class="panel hidden center">
-    <div style="font-weight:700;margin-bottom:8px">Preview</div>
-    <img id="previewImg" class="preview" alt="preview" />
-    <div style="height:10px"></div>
-    <div class="row" style="justify-content:center">
-      <button id="confirmImage" class="btn">✅ Use this</button>
-      <button id="rejectImage" class="ghost">❌ Retake / Re-upload</button>
-    </div>
-  </div>
+  <h3>Parsed text (OCR output)</h3>
+  <pre id="ocrtext"></pre>
 
-  <!-- Crop + Rotate Panel -->
-  <div id="cropPanel" class="panel hidden">
-    <div class="flex-between">
-      <div style="font-weight:700">Crop & Rotate</div>
-      <div class="small muted">Use crop to isolate question area. Rotate if photo inverted.</div>
-    </div>
-    <div style="height:12px"></div>
-    <div class="crop-area">
-      <img id="cropImage" src="" alt="to crop" style="max-width:100%;display:block" />
-    </div>
-    <div class="editor-controls">
-      <button id="rotateLeft" class="icon-btn">⟲ Rotate Left</button>
-      <button id="rotateRight" class="icon-btn">⟳ Rotate Right</button>
-      <button id="flipHorizontal" class="icon-btn">↔ Flip</button>
-      <button id="applyCrop" class="btn">Apply Crop</button>
-      <button id="cancelCrop" class="ghost">Cancel</button>
-    </div>
-  </div>
-
-  <!-- OCR progress + Parsed text (hidden until done) -->
-  <div id="ocrPanel" class="panel hidden">
-    <div class="flex-between">
-      <div style="font-weight:700">OCR & Parse</div>
-      <div class="small muted" id="ocrStatus">Waiting...</div>
-    </div>
-    <div style="height:8px"></div>
-    <div class="row">
-      <div style="flex:1">
-        <div style="font-size:13px;margin-bottom:6px" class="muted">Detected text (editable):</div>
-        <textarea id="detectedText" class="muted"></textarea>
-      </div>
-      <div style="width:280px;margin-left:8px">
-        <div style="font-weight:700">Parsing Options</div>
-        <div style="height:8px"></div>
-        <label class="inline"><input id="parseNumbers" type="checkbox" checked> Expect numbered questions (1., 2.)</label>
-        <label class="inline"><input id="parseLetters" type="checkbox" checked> Expect lettered options (A., B.)</label>
-        <div style="height:10px"></div>
-        <button id="parseBtn" class="btn">Parse to Quiz</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quiz Editor -->
-  <div id="editorPanel" class="panel hidden">
-    <div class="flex-between">
-      <div style="font-weight:700">Quiz Editor</div>
-      <div class="row">
-        <div class="badge small muted">Questions: <span id="qcount">0</span></div>
-        <button id="autoMarkBtn" class="ghost small-ghost">Auto mark first option as correct (temp)</button>
-      </div>
-    </div>
-    <div id="questionsWrap" style="margin-top:10px"></div>
-
-    <div style="height:8px"></div>
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div class="col" style="max-width:420px">
-        <div style="font-weight:700">Scoring</div>
-        <div class="row">
-          <label>Marks / question: <input id="marksPerQ" type="number" value="1" min="0" step="0.25"></label>
-          <label>Negative per wrong: <input id="negPerQ" type="number" value="0" min="0" step="0.25"></label>
-        </div>
-      </div>
-
-      <div class="controls-bottom">
-        <button id="attemptModeBtn" class="btn">Attempt Quiz</button>
-        <button id="clearQuizBtn" class="ghost">Clear Quiz</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Attempt Panel -->
-  <div id="attemptPanel" class="panel hidden">
-    <div class="flex-between"><div style="font-weight:700">Attempt Quiz</div><div class="small muted">Answer all questions and Submit</div></div>
-    <div id="attemptQuestions" style="margin-top:10px"></div>
-    <div style="height:10px"></div>
-    <div class="row" style="justify-content:space-between;align-items:center">
-      <div class="small muted">Marks: <span id="marksSummary">0</span></div>
-      <div class="row">
-        <button id="submitAttempt" class="btn">Submit</button>
-        <button id="backToEdit" class="ghost">Back to Edit</button>
-      </div>
-    </div>
-    <div style="height:10px"></div>
-    <div id="attemptResult" class="hidden"></div>
-  </div>
-
-  <footer>Made for you — copy, test, and improve. If kuch aur add karna ho to bol de.</footer>
-</div>
-
-<!-- Libraries: CropperJS, Tesseract -->
-<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.4.0/dist/tesseract.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
 <script>
-/*
-  Full app JS
-  Flow:
-   - startBtn opens choicePanel
-   - chooseCamera -> open cameraModal (full screen)
-   - capture -> show previewPanel
-   - confirm -> open cropPanel (CropperJS)
-   - applyCrop -> run OCR (Tesseract)
-   - parse text -> build quiz editor
-   - user edits, sets correct answers, sets marks
-   - attempt mode -> user attempts -> submit -> score shows (positive/negative)
-   - export/import JSON available
-*/
+const fileIn = document.getElementById('file');
+const runBtn = document.getElementById('run');
+const exportBtn = document.getElementById('export');
+const statusEl = document.getElementById('status');
+const ocrtextPre = document.getElementById('ocrtext');
+const quizDiv = document.getElementById('quiz');
+const canvas = document.getElementById('cv');
+const ctx = canvas.getContext('2d');
 
-const startBtn = document.getElementById('startBtn');
-const choicePanel = document.getElementById('choicePanel');
-const chooseCamera = document.getElementById('chooseCamera');
-const chooseUpload = document.getElementById('chooseUpload');
-const fileInput = document.getElementById('fileInput');
-const cameraModal = document.getElementById('cameraModal');
-const video = document.getElementById('video');
-const captureBtn = document.getElementById('captureBtn');
-const closeCam = document.getElementById('closeCam');
-const flipCam = document.getElementById('flipCam');
-const toggleTorch = document.getElementById('toggleTorch');
-const camCanvas = document.getElementById('camCanvas');
+function preprocessImage(img) {
+  // draw image to canvas and apply simple preprocessing: resize, grayscale, threshold
+  const maxW = 1600;
+  let w = img.width, h = img.height;
+  if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+  canvas.width = w; canvas.height = h;
+  ctx.drawImage(img, 0, 0, w, h);
 
-const previewPanel = document.getElementById('previewPanel');
-const previewImg = document.getElementById('previewImg');
-const confirmImage = document.getElementById('confirmImage');
-const rejectImage = document.getElementById('rejectImage');
-
-const cropPanel = document.getElementById('cropPanel');
-const cropImage = document.getElementById('cropImage');
-const rotateLeft = document.getElementById('rotateLeft');
-const rotateRight = document.getElementById('rotateRight');
-const flipHorizontal = document.getElementById('flipHorizontal');
-const applyCrop = document.getElementById('applyCrop');
-const cancelCrop = document.getElementById('cancelCrop');
-
-const ocrPanel = document.getElementById('ocrPanel');
-const ocrStatus = document.getElementById('ocrStatus');
-const detectedText = document.getElementById('detectedText');
-const parseBtn = document.getElementById('parseBtn');
-const parseNumbers = document.getElementById('parseNumbers');
-const parseLetters = document.getElementById('parseLetters');
-
-const editorPanel = document.getElementById('editorPanel');
-const questionsWrap = document.getElementById('questionsWrap');
-const qcount = document.getElementById('qcount');
-const marksPerQ = document.getElementById('marksPerQ');
-const negPerQ = document.getElementById('negPerQ');
-const attemptModeBtn = document.getElementById('attemptModeBtn');
-const clearQuizBtn = document.getElementById('clearQuizBtn');
-const autoMarkBtn = document.getElementById('autoMarkBtn');
-
-const attemptPanel = document.getElementById('attemptPanel');
-const attemptQuestions = document.getElementById('attemptQuestions');
-const submitAttempt = document.getElementById('submitAttempt');
-const backToEdit = document.getElementById('backToEdit');
-const marksSummary = document.getElementById('marksSummary');
-const attemptResult = document.getElementById('attemptResult');
-
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
-
-let cropper = null;
-let currentStream = null;
-let usingFront = false;
-let torchOn = false;
-
-let workingImageDataURL = null; // final cropped image to OCR
-let quizData = { title: "Generated Quiz", questions: [] };
-
-// --- start flow ---
-startBtn.addEventListener('click', ()=> {
-  choicePanel.scrollIntoView({behavior:'smooth'});
-});
-
-// Camera handling
-async function openCamera(){
-  cameraModal.classList.remove('hidden');
-  // preferred constraints
-  const constraints = {
-    video: { facingMode: usingFront ? 'user' : 'environment', width: { ideal: 1280 }, height: { ideal: 720 }},
-    audio: false
-  };
-  try {
-    if (currentStream) {
-      currentStream.getTracks().forEach(t=>t.stop());
-      currentStream = null;
-    }
-    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-    video.srcObject = currentStream;
-    await video.play();
-  } catch(err) {
-    alert("Camera access error: " + err.message);
-    cameraModal.classList.add('hidden');
+  // basic grayscale + simple adaptive-ish threshold
+  const imgd = ctx.getImageData(0,0,w,h);
+  const d = imgd.data;
+  for (let i=0;i<d.length;i+=4) {
+    const r=d[i], g=d[i+1], b=d[i+2];
+    const gray = 0.299*r + 0.587*g + 0.114*b;
+    d[i]=d[i+1]=d[i+2]=gray;
   }
+  // simple contrast stretch
+  let min=255,max=0;
+  for (let i=0;i<d.length;i+=4){ if(d[i]<min)min=d[i]; if(d[i]>max)max=d[i]; }
+  const scale = 255/(max-min||1);
+  for (let i=0;i<d.length;i+=4){
+    let v = Math.round((d[i]-min)*scale);
+    d[i]=d[i+1]=d[i+2]=v;
+  }
+  ctx.putImageData(imgd,0,0);
+  // optional: apply global threshold to boost text
+  const thresh = 160;
+  const imgd2 = ctx.getImageData(0,0,w,h);
+  const d2 = imgd2.data;
+  for (let i=0;i<d2.length;i+=4){
+    const v = d2[i] > thresh ? 255 : 0;
+    d2[i]=d2[i+1]=d2[i+2]=v;
+  }
+  ctx.putImageData(imgd2,0,0);
 }
 
-chooseCamera.addEventListener('click', async ()=>{
-  await openCamera();
-});
-
-closeCam.addEventListener('click', ()=>{
-  cameraModal.classList.add('hidden');
-  if (currentStream) {
-    currentStream.getTracks().forEach(t=>t.stop());
-    currentStream = null;
-  }
-});
-
-flipCam.addEventListener('click', async ()=>{
-  usingFront = !usingFront;
-  if (currentStream) currentStream.getTracks().forEach(t=>t.stop());
-  await openCamera();
-});
-
-// Torch toggle (best-effort, may not work on all devices)
-toggleTorch.addEventListener('click', async ()=>{
-  if (!currentStream) return;
-  const [track] = currentStream.getVideoTracks();
-  const capabilities = track.getCapabilities();
-  if (!capabilities.torch) {
-    alert("Torch not supported on this device.");
-    return;
-  }
-  try {
-    torchOn = !torchOn;
-    await track.applyConstraints({ advanced: [{ torch: torchOn }]});
-  } catch(e) { console.warn(e); alert("Torch control failed."); }
-});
-
-// capture
-captureBtn.addEventListener('click', ()=>{
-  // draw video on canvas
-  camCanvas.width = video.videoWidth;
-  camCanvas.height = video.videoHeight;
-  const ctx = camCanvas.getContext('2d');
-  ctx.drawImage(video, 0, 0, camCanvas.width, camCanvas.height);
-  const dataUrl = camCanvas.toDataURL('image/jpeg', 0.95);
-  previewImg.src = dataUrl;
-  // stop camera
-  if (currentStream) { currentStream.getTracks().forEach(t=>t.stop()); currentStream=null; }
-  cameraModal.classList.add('hidden');
-  previewPanel.classList.remove('hidden');
-});
-
-// Upload handling
-chooseUpload.addEventListener('click', ()=> fileInput.click());
-fileInput.addEventListener('change', (e)=>{
-  const f = e.target.files[0];
-  if (!f) return;
-  const reader = new FileReader();
-  reader.onload = ()=> {
-    previewImg.src = reader.result;
-    previewPanel.classList.remove('hidden');
-  };
-  reader.readAsDataURL(f);
-});
-
-// preview confirm or reject
-rejectImage.addEventListener('click', ()=>{
-  previewPanel.classList.add('hidden');
-  // reset file input
-  fileInput.value = "";
-});
-
-confirmImage.addEventListener('click', ()=>{
-  // move to cropper
-  const src = previewImg.src;
-  if (!src) return alert('No image found');
-  previewPanel.classList.add('hidden');
-  cropImage.src = src;
-  cropPanel.classList.remove('hidden');
-  // init cropper
-  setTimeout(()=> {
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(cropImage, {
-      viewMode: 1,
-      autoCropArea: 0.9,
-      movable: true,
-      zoomable: true,
-      rotatable: true,
-      responsive: true,
-      background: false
-    });
-  }, 200);
-});
-
-// cropper controls
-rotateLeft.addEventListener('click', ()=> cropper && cropper.rotate(-90));
-rotateRight.addEventListener('click', ()=> cropper && cropper.rotate(90));
-flipHorizontal.addEventListener('click', ()=> {
-  if (!cropper) return;
-  const scaleX = cropper.getData().scaleX || 1;
-  cropper.scaleX(-scaleX);
-});
-
-cancelCrop.addEventListener('click', ()=> {
-  if (cropper) { cropper.destroy(); cropper=null; }
-  cropPanel.classList.add('hidden');
-  previewPanel.classList.remove('hidden');
-});
-
-// apply crop -> run OCR
-applyCrop.addEventListener('click', async ()=> {
-  if (!cropper) return;
-  const canvas = cropper.getCroppedCanvas({ imageSmoothingQuality: 'high' , maxWidth: 2000, maxHeight:2000});
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-  workingImageDataURL = dataUrl;
-  // destroy cropper
-  cropper.destroy(); cropper=null;
-  cropPanel.classList.add('hidden');
-  // go to OCR panel
-  ocrPanel.classList.remove('hidden');
-  ocrStatus.textContent = "Running OCR (Tesseract)...";
-  detectedText.value = "";
-  // Run Tesseract
-  try {
-    const worker = Tesseract.createWorker({
-      logger: m => {
-        // show progress
-        if (m && m.status) {
-          const pct = m.progress ? Math.round(m.progress*100) : '';
-          ocrStatus.textContent = `${m.status} ${pct}%`;
-        }
-      }
-    });
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    const { data: { text } } = await worker.recognize(dataUrl);
-    detectedText.value = text.trim();
-    ocrStatus.textContent = "OCR complete. Edit text if needed, then Parse.";
-    await worker.terminate();
-  } catch (e) {
-    ocrStatus.textContent = "OCR failed: " + e.message;
-  }
-});
-
-// parse button -> parse detectedText to questions
 function simpleParse(text) {
-  // Heuristic parser:
-  // 1) Split lines, merge lines that are continuous
-  // 2) Detect question starts by numbers like "1." or by lines ending with '?'
-  // 3) Detect options by starting with A./A) or single letter lines "A" then text
-  // 4) Group accordingly; fallback: chunk by '?' then next lines as options
+  // Heuristics-based parser: finds numbered questions and options (A,B,C,D...)
   const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
   const qs = [];
   let curr = null;
 
-  const qNumRegex = /^(\d{1,3})[\.\)]\s*(.+)/; // "1. Question"
-  const optRegex = /^([A-D])[\.\)]\s*(.+)/i;   // "A. option"
-  const optInlineRegex = /\s([A-D])[\.\)]\s/;  // inline check
+  // regex patterns
+  const qStart = /^\s*(\d{1,3})[\.\)]\s*(.+)/; // "1. Question..." or "1) Question..."
+  const optStart = /^\s*([A-D]|[A-D]\.|[A-D]\)|\([A-D]\))\s*(.+)/i; // A. option, (A) option
+  const optOnlyLetter = /^\s*([A-D])\s*[\.\)]?\s*(.+)/i;
 
   for (let i=0;i<lines.length;i++){
     const L = lines[i];
-    let m = L.match(qNumRegex);
+
+    let m = L.match(qStart);
     if (m) {
+      // new question
       if (curr) qs.push(curr);
-      curr = { qnum: m[1], qtext: m[2], opts: [] };
+      curr = {num: m[1], q: m[2].trim(), opts: []};
       continue;
+    }
+    // if line ends with '?' but not matched as numbered, treat as question (fallback)
+    if (!curr && L.endsWith('?')) {
+      curr = {num: null, q: L, opts: []}; continue;
     }
     // option detection
-    let mo = L.match(optRegex);
+    let mo = L.match(optStart) || L.match(optOnlyLetter);
     if (mo && curr) {
-      curr.opts.push({ label: mo[1].toUpperCase(), text: mo[2] });
+      // normalize label A/B/C...
+      let label = mo[1].replace(/\W/g,'').toUpperCase();
+      curr.opts.push({label, text: mo[2].trim()});
       continue;
     }
-    // if line contains "A. " inline, try to split
-    if (optInlineRegex.test(L) && curr && !/^\d/.test(L)) {
-      // split using A./B. markers
-      // naive split by regexp
-      const parts = L.split(/(?=[A-D][\.\)])/i);
-      parts.forEach(p => {
-        const m2 = p.match(optRegex);
-        if (m2) curr.opts.push({ label: m2[1].toUpperCase(), text: m2[2].trim() });
-      });
-      continue;
-    }
-    // if line ends with ?, treat as new question if not in curr
-    if (L.endsWith('?') && !curr) {
-      curr = { qnum: null, qtext: L, opts: [] };
-      continue;
-    }
-    // if curr exists but no options yet -> treat as continuation of question
-    if (curr && !curr.opts.length && !optRegex.test(L)) {
-      curr.qtext += ' ' + L;
-      continue;
-    }
-    // if curr exists and options exist but line doesn't match option -> append to last option text
-    if (curr && curr.opts.length && !optRegex.test(L)) {
+    // sometimes options are on separate lines without letter, if previous line was option header:
+    if (curr && curr.opts.length && /^[^\dA-Z]/.test(L)) {
+      // append as continuation to last option
       curr.opts[curr.opts.length-1].text += ' ' + L;
       continue;
     }
-    // fallback: if line contains '?' start new question
-    if (L.includes('?')) {
-      if (curr) qs.push(curr);
-      curr = { qnum: null, qtext: L, opts: [] };
+    // fallback: if curr exists but line looks like a question continuation, append
+    if (curr && !curr.opts.length && !L.match(/^[A-D]\b/i)) {
+      curr.q += ' ' + L;
       continue;
     }
-    // otherwise skip
   }
   if (curr) qs.push(curr);
-
-  // Cleanup: ensure options labeled A,B,C.. if unlabeled
+  // cleanup: if opts labels inconsistent, auto-label A,B,C...
   qs.forEach(q=>{
     if (q.opts.length && !q.opts[0].label) {
-      q.opts = q.opts.map((o,idx)=>({ label: String.fromCharCode(65+idx), text: o.text || o }));
+      q.opts = q.opts.map((o,i)=>({label: String.fromCharCode(65+i), text:o.text}));
     }
-  });
-
-  // If parser found zero questions, fallback: split by '?' then parse options below each
-  if (!qs.length) {
-    const chunks = text.split('?').map(s=>s.trim()).filter(Boolean);
-    chunks.forEach((ch,idx)=>{
-      const post = ch + (idx < chunks.length ? '?' : '');
-      // try to find options lines following this chunk in original text
-      const opts = [];
-      // naive: look for lines starting with A./B.
-      // we'll just leave opts empty and allow user to add
-      qs.push({ qnum: idx+1, qtext: post, opts });
-    });
-  }
-
-  // map to normalized structure
-  return qs.map((q,i)=>({
-    id: 'q'+(i+1),
-    number: q.qnum || (i+1),
-    text: q.qtext,
-    options: q.opts.length ? q.opts.map(o=>({ label:o.label, text:o.text, id: Math.random().toString(36).slice(2,8)})) : [],
-    correct: null
-  }));
-}
-
-parseBtn.addEventListener('click', ()=> {
-  const txt = detectedText.value.trim();
-  if (!txt) return alert('Detected text empty. Please edit or re-crop image.');
-  const parsed = simpleParse(txt);
-  quizData.title = "Generated Quiz";
-  quizData.questions = parsed;
-  // ensure at least 2-3 options for each question: if empty, add placeholders
-  quizData.questions.forEach(q=>{
-    if (!q.options.length) {
-      q.options = [
-        { label:'A', text:'Option A (edit)', id:Math.random().toString(36).slice(2,8) },
-        { label:'B', text:'Option B (edit)', id:Math.random().toString(36).slice(2,8) },
-        { label:'C', text:'Option C (edit)', id:Math.random().toString(36).slice(2,8) }
-      ];
-    }
-  });
-  ocrPanel.classList.add('hidden');
-  renderEditor();
-});
-
-// Render Editor UI
-function renderEditor() {
-  editorPanel.classList.remove('hidden');
-  questionsWrap.innerHTML = '';
-  qcount.textContent = quizData.questions.length;
-  quizData.questions.forEach((q,qi)=>{
-    const div = document.createElement('div');
-    div.className = 'question-card';
-    div.dataset.qid = q.id;
-    div.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-weight:700">Q${qi+1}. <span class="muted small">${q.number ? '(#'+q.number+')' : ''}</span></div>
-        <div class="row">
-          <button class="ghost small-ghost editQ">Edit Q</button>
-          <button class="ghost small-ghost addOpt">+Opt</button>
-          <button class="ghost small-ghost delQ">Delete</button>
-        </div>
-      </div>
-      <div style="margin-top:8px">
-        <textarea class="qtext">${escapeHtml(q.text)}</textarea>
-      </div>
-      <div style="margin-top:8px" class="optsWrap"></div>
-      <div style="margin-top:8px" class="qmeta small muted">Correct: <span class="corr">${q.correct || 'Not set'}</span></div>
-    `;
-    questionsWrap.appendChild(div);
-
-    const optsWrap = div.querySelector('.optsWrap');
-    function renderOptions() {
-      optsWrap.innerHTML = '';
-      q.options.forEach((opt,oi)=>{
-        const optDiv = document.createElement('div');
-        optDiv.style.display = 'flex';
-        optDiv.style.gap = '8px';
-        optDiv.style.marginTop = '6px';
-        optDiv.innerHTML = `
-          <input type="radio" name="corr_${q.id}" ${q.correct===opt.label ? 'checked': ''} value="${opt.label}">
-          <input class="option-input optText" data-oid="${opt.id}" value="${escapeHtml(opt.text)}">
-          <input class="small-ghost optLabel" style="width:60px" value="${opt.label}">
-          <button class="ghost small-ghost delOpt">Del</button>
-        `;
-        optsWrap.appendChild(optDiv);
-
-        // events
-        optDiv.querySelector('input[type=radio]').addEventListener('change', (e)=>{
-          q.correct = opt.label;
-          div.querySelector('.corr').textContent = q.correct;
-        });
-        optDiv.querySelector('.delOpt').addEventListener('click', ()=>{
-          q.options = q.options.filter(o=>o.id !== opt.id);
-          renderOptions();
-        });
-        optDiv.querySelector('.optText').addEventListener('input', (ev)=>{
-          opt.text = ev.target.value;
-        });
-        optDiv.querySelector('.optLabel').addEventListener('input', (ev)=>{
-          opt.label = ev.target.value.toUpperCase();
-          renderOptions(); // refresh to keep labels consistent
-        });
-      });
-    }
-    renderOptions();
-
-    // edit q text
-    div.querySelector('.qtext').addEventListener('input', (e)=> q.text = e.target.value);
-
-    // add option
-    div.querySelector('.addOpt').addEventListener('click', ()=>{
-      const nextLabel = String.fromCharCode(65 + q.options.length);
-      q.options.push({ label: nextLabel, text: 'New option', id: Math.random().toString(36).slice(2,8) });
-      renderOptions();
-    });
-
-    // delete question
-    div.querySelector('.delQ').addEventListener('click', ()=>{
-      if (!confirm('Delete this question?')) return;
-      quizData.questions = quizData.questions.filter(x=>x.id!==q.id);
-      renderEditor();
-    });
-
-    // edit open in prompt
-    div.querySelector('.editQ').addEventListener('click', ()=>{
-      const newq = prompt('Edit question text', q.text);
-      if (newq != null) { q.text = newq; div.querySelector('.qtext').value = q.text; }
-    });
-  });
-}
-
-// helper escape
-function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// clear quiz
-clearQuizBtn.addEventListener('click', ()=>{
-  if (!confirm('Clear the generated quiz?')) return;
-  quizData.questions = [];
-  editorPanel.classList.add('hidden');
-});
-
-// auto mark first option
-autoMarkBtn.addEventListener('click', ()=>{
-  quizData.questions.forEach(q=>{ if (q.options && q.options[0]) q.correct = q.options[0].label; });
-  renderEditor();
-});
-
-// Attempt mode
-attemptModeBtn.addEventListener('click', ()=>{
-  if (!quizData.questions.length) return alert('No questions in quiz.');
-  editorPanel.classList.add('hidden');
-  attemptPanel.classList.remove('hidden');
-  renderAttempt();
-});
-
-function renderAttempt(){
-  attemptQuestions.innerHTML = '';
-  marksSummary.textContent = `${marksPerQ.value} / q, -${negPerQ.value} per wrong`;
-  quizData.questions.forEach((q,idx)=>{
-    const div = document.createElement('div');
-    div.className = 'question-card';
-    div.innerHTML = `<div style="font-weight:700">Q${idx+1}. ${escapeHtml(q.text)}</div>
-      <div style="margin-top:6px" class="optsArea"></div>`;
-    attemptQuestions.appendChild(div);
-    const optsArea = div.querySelector('.optsArea');
-    q.options.forEach(opt=>{
-      const lab = document.createElement('label');
-      lab.className = 'inline';
-      lab.style.marginTop = '6px';
-      lab.innerHTML = `<input type="radio" name="ans_${idx}" value="${opt.label}"> <div style="margin-left:6px">${escapeHtml(opt.label)}. ${escapeHtml(opt.text)}</div>`;
-      optsArea.appendChild(lab);
-    });
-  });
-}
-
-// submit attempt
-submitAttempt.addEventListener('click', ()=>{
-  const totalQ = quizData.questions.length;
-  let score = 0;
-  let correctCount = 0, wrongCount = 0, unattempted = 0;
-  quizData.questions.forEach((q,idx)=>{
-    const sel = document.querySelector(`input[name="ans_${idx}"]:checked`);
-    if (!sel) { unattempted++; return; }
-    const chosen = sel.value;
-    if (q.correct && chosen === q.correct) {
-      correctCount++;
-      score += parseFloat(marksPerQ.value || 0);
-    } else {
-      wrongCount++;
-      score -= parseFloat(negPerQ.value || 0);
-    }
-  });
-  attemptResult.classList.remove('hidden');
-  attemptResult.className = 'resultbox';
-  attemptResult.innerHTML = `
-    Score: ${score} <br>
-    Correct: ${correctCount} | Wrong: ${wrongCount} | Unattempted: ${unattempted} <br>
-    Total Questions: ${totalQ}
-  `;
-});
-
-// back to edit
-backToEdit.addEventListener('click', ()=>{
-  attemptPanel.classList.add('hidden');
-  editorPanel.classList.remove('hidden');
-  attemptResult.classList.add('hidden');
-});
-
-// EXPORT / IMPORT
-exportBtn.addEventListener('click', ()=>{
-  // build export object
-  const exportObj = {
-    meta: { title: quizData.title, marksPerQ: marksPerQ.value, negPerQ: negPerQ.value, exportedAt: (new Date()).toISOString()},
-    quiz: quizData
-  };
-  const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'quiz_export.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-importBtn.addEventListener('click', ()=>{
-  const input = document.createElement('input');
-  input.type='file';
-  input.accept='application/json';
-  input.onchange = async (e)=>{
-    const f = e.target.files[0];
-    if (!f) return;
-    const txt = await f.text();
-    try {
-      const obj = JSON.parse(txt);
-      if (obj.quiz) {
-        quizData = obj.quiz;
-        // set marks if present
-        if (obj.meta) {
-          marksPerQ.value = obj.meta.marksPerQ || marksPerQ.value;
-          negPerQ.value = obj.meta.negPerQ || negPerQ.value;
-        }
-        renderEditor();
-        alert('Quiz imported.');
-      } else {
-        alert('Invalid quiz file.');
+    // if no options detected but a line contains "A." inline, try inline split
+    if (!q.opts.length) {
+      const inline = q.q.split(/\s+(A\.|B\.|C\.|D\.)\s+/i).filter(Boolean);
+      if (inline.length>=2) {
+        // inline[0] is question text, rest are options fragments
+        q.q = inline[0].trim();
+        const rest = q.q ? q.q : '';
       }
-    } catch(e) { alert('Import error: ' + e.message); }
-  };
-  input.click();
-});
+    }
+  });
+  return qs;
+}
 
-// initial bindings for choicePanel buttons
-// show/hide choice panel when start
-document.getElementById('startBtn').addEventListener('click', ()=>{
-  // focus: display choice panel (already visible) -> scroll
-  choicePanel.scrollIntoView({behavior:'smooth'});
-});
+async function runOCRFromFile(file) {
+  statusEl.textContent = 'Loading image...';
+  const img = new Image();
+  const dataUrl = await new Promise(res=>{
+    const fr = new FileReader();
+    fr.onload = e=>res(e.target.result);
+    fr.readAsDataURL(file);
+  });
+  img.src = dataUrl;
+  await new Promise(r => img.onload = r);
 
-// small usability: pressing Escape cancels camera / crop
-document.addEventListener('keydown', (e)=>{
-  if (e.key === 'Escape') {
-    if (!cameraModal.classList.contains('hidden')) { closeCam.click(); }
-    if (!cropPanel.classList.contains('hidden')) { cancelCrop.click(); }
+  // preprocess
+  preprocessImage(img);
+  statusEl.textContent = 'Running OCR (Tesseract)...';
+  const { data } = await Tesseract.recognize(canvas, 'eng', {
+    logger: m => {
+      if (m.status && m.progress) {
+        statusEl.textContent = `OCR: ${m.status} ${(m.progress*100).toFixed(0)}%`;
+      }
+    }
+  });
+  statusEl.textContent = 'OCR complete';
+  return data.text;
+}
+
+function renderQuiz(parsed) {
+  quizDiv.innerHTML = '';
+  if (!parsed.length) { quizDiv.innerHTML = '<div class="small">Koi question detect nahi hua.</div>'; return; }
+  parsed.forEach((q,i)=>{
+    const div = document.createElement('div'); div.className='question';
+    const title = document.createElement('div');
+    title.innerHTML = `<strong>Q${q.num ?? (i+1)}:</strong> ${escapeHtml(q.q)}`;
+    div.appendChild(title);
+    const optsDiv = document.createElement('div'); optsDiv.className='opts';
+    // radio buttons to select correct answer
+    q.opts.forEach((o,oi)=>{
+      const id = `q${i}_opt${oi}`;
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="radio" name="q${i}" value="${o.label}"> <strong>${o.label}.</strong> ${escapeHtml(o.text)}`;
+      optsDiv.appendChild(label);
+    });
+    // if no options, allow manual add
+    if (!q.opts.length) {
+      const addBtn = document.createElement('button');
+      addBtn.textContent = 'Add option';
+      addBtn.onclick = ()=>{
+        const t = prompt('Option text');
+        if (t) {
+          const newLabel = String.fromCharCode(65 + q.opts.length);
+          q.opts.push({label:newLabel, text:t});
+          renderQuiz(parsed);
+        }
+      };
+      optsDiv.appendChild(addBtn);
+    }
+    div.appendChild(optsDiv);
+
+    // Save answer button per question
+    const saveRow = document.createElement('div'); saveRow.style.marginTop='8px';
+    const correctSpan = document.createElement('span'); correctSpan.className='small';
+    saveRow.appendChild(correctSpan);
+    const saveBtn = document.createElement('button'); saveBtn.textContent='Set correct answer';
+    saveBtn.style.marginLeft='8px';
+    saveBtn.onclick = ()=>{
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
+      if (!selected) { alert('Pehele option select karo'); return; }
+      q.correct = selected.value;
+      correctSpan.textContent = `Correct: ${q.correct}`;
+    };
+    saveRow.appendChild(saveBtn);
+
+    // Edit question / options
+    const editBtn = document.createElement('button'); editBtn.textContent='Edit Q'; editBtn.style.marginLeft='8px';
+    editBtn.onclick = ()=>{
+      const newQ = prompt('Edit question text', q.q);
+      if (newQ!=null) { q.q = newQ.trim(); renderQuiz(parsed); }
+    };
+    saveRow.appendChild(editBtn);
+
+    div.appendChild(saveRow);
+
+    quizDiv.appendChild(div);
+  });
+}
+
+function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+runBtn.onclick = async ()=>{
+  if (!fileIn.files.length) { alert('Upload an image first'); return; }
+  const file = fileIn.files[0];
+  try {
+    const text = await runOCRFromFile(file);
+    ocrtextPre.textContent = text;
+    const parsed = simpleParse(text);
+    // If parser found no numbered questions, also try naive split by lines with '?' and next lines as options
+    if (!parsed.length) {
+      // fallback simple grouping: find lines with '?' as question end
+      const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      const fallback = [];
+      for (let i=0;i<lines.length;i++){
+        if (lines[i].endsWith('?')) {
+          const qtext = lines[i];
+          const opts = [];
+          for (let j=i+1;j<Math.min(lines.length,i+6);j++){
+            if (/^[A-D][\.\)]/i.test(lines[j]) || /^[A-D]\b/i.test(lines[j])) opts.push({label: String.fromCharCode(65+opts.length), text: lines[j]});
+            else if (opts.length) { opts[opts.length-1].text += ' '+lines[j]; }
+            else break;
+          }
+          fallback.push({num:null,q:qtext,opts});
+        }
+      }
+      if (fallback.length) parsed.push(...fallback);
+    }
+    renderQuiz(parsed);
+  } catch (e) {
+    console.error(e);
+    alert('Error: ' + e.message);
   }
-});
+};
 
+exportBtn.onclick = ()=>{
+  // collect data
+  const questions = Array.from(quizDiv.querySelectorAll('.question')).map((div,i)=>{
+    const q = {}; const strong = div.querySelector('strong');
+    q.q = div.querySelector('div').textContent.replace(/^Q\d+:/,'').trim();
+    q.opts = Array.from(div.querySelectorAll('.opts label')).map(lbl=>{
+      const txt = lbl.textContent.trim();
+      const m = txt.match(/^([A-D])\.\s*(.+)/i);
+      if (m) return {label:m[1], text:m[2].trim()};
+      return {label:null, text: txt};
+    });
+    const corr = div.querySelector('.small')?.textContent?.replace('Correct:','').trim() || null;
+    q.correct = corr || null;
+    return q;
+  });
+  const blob = new Blob([JSON.stringify(questions, null, 2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'quiz.json'; a.click();
+  URL.revokeObjectURL(url);
+};
 </script>
 </body>
 </html>
