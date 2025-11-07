@@ -3,27 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Beast Manual Quiz Builder — One-by-One | Timer | 200 Q</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Beast Manual Quiz Builder — Final (Result Analysis + Timer + Vibe)</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#071026; --card:#07182b; --muted:#9fb4c8; --accent:#06b6d4; --accent2:#10b981; --danger:#ef4444; --glass: rgba(255,255,255,0.03);
-  --glass-2: rgba(255,255,255,0.02);
+  --bg:#041025; --card:#071428; --muted:#9fb4c8; --accent:#06b6d4; --accent2:#10b981; --danger:#ef4444; --gold:#ffd54f;
+  --glass: rgba(255,255,255,0.03);
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#020617 0%, var(--bg) 100%);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6f3fb}
-a{color:inherit}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#020617 0%, var(--bg) 100%);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6f3fb;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1100px;margin:18px auto;padding:18px}
 .header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .title{display:flex;flex-direction:column}
-.title h1{margin:0;font-size:20px;letter-spacing:-0.2px}
+.title h1{margin:0;font-size:20px}
 .title .sub{color:var(--muted);font-size:13px;margin-top:6px}
 .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.btn{background:linear-gradient(180deg,var(--accent) 0%, #05a7bd 100%);color:#021; padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;box-shadow:0 8px 20px rgba(6,182,212,0.08)}
+.btn{background:linear-gradient(180deg,var(--accent) 0%, #05a7bd 100%);color:#021; padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700;box-shadow:0 10px 30px rgba(6,182,212,0.06)}
 .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600;padding:8px 12px}
 .badge{background:var(--glass);padding:6px 10px;border-radius:999px;font-weight:700;color:var(--muted);font-size:13px}
-.panel{background:linear-gradient(180deg,var(--glass) 0%, var(--glass-2) 100%);padding:12px;border-radius:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.03)}
+.panel{background:linear-gradient(180deg,var(--glass) 0%, rgba(255,255,255,0.02) 100%);padding:12px;border-radius:12px;margin-top:12px;border:1px solid rgba(255,255,255,0.03)}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .col{display:flex;flex-direction:column;gap:8px}
 .small{font-size:13px;color:var(--muted)}
@@ -40,319 +39,311 @@ a{color:inherit}
 .controls-bottom{display:flex;gap:8px;align-items:center}
 .center{text-align:center}
 
-/* One-by-one display (attempt) */
-.attempt-wrap{display:flex;flex-direction:column;gap:12px;align-items:stretch}
-.attempt-card{padding:16px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+/* Attempt modal and progress */
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:9999}
+.modal-card{width:92%;max-width:900px;background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
 .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
 .progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease}
 
 /* timer styles */
-.timer{font-weight:800;color:var(--danger);font-size:18px}
+.timer{font-weight:900;color:var(--danger);font-size:18px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.02)}
 
-/* animated buttons */
-.btn-float{position:fixed;right:18px;bottom:18px;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 14px 40px rgba(3,105,178,0.12)}
-.anim-fade{animation:fadeIn .35s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* result analysis */
+.analysis{display:flex;gap:12px;flex-wrap:wrap}
+.analysis-left{flex:1;min-width:280px}
+.analysis-right{width:360px;min-width:260px}
+.result-card{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.03)}
+.score-big{font-size:44px;font-weight:900}
+.vibe-msg{font-weight:900;font-size:20px;margin-top:10px}
 
-/* modal */
-.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.6);z-index:9999}
-.modal-card{width:100%;max-width:900px;background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+/* per-question table */
+.q-table{width:100%;border-collapse:collapse}
+.q-table th, .q-table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px;text-align:left}
+.q-time{font-size:12px;color:var(--muted)}
 
-/* tiny helpers */
-.flex{display:flex}
-.space-between{justify-content:space-between;align-items:center}
-.right{margin-left:auto}
-.pulse{animation:pulse 1.6s infinite}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+/* responsive tweaks */
+@media(max-width:820px){
+  .analysis-right{width:100%}
+  .modal-card{width:96%}
+}
 
-.note{font-size:13px;color:var(--muted);margin-top:6px}
-footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
-@media(max-width:820px){ .wrap{padding:12px} .header{flex-direction:column;align-items:flex-start} }
+/* premium gold theme */
+.gold-bg{background:linear-gradient(90deg, rgba(255,215,64,0.08), rgba(255,250,240,0.01));border:1px solid rgba(255,215,64,0.18)}
+.gold-text{color:var(--gold);font-weight:900}
+
+/* sad theme */
+.sad-text{color:#f3a0a0;font-weight:900}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <div class="header">
     <div class="title">
-      <h1>⚡ Beast Manual Quiz Builder</h1>
-      <div class="sub">Pure manual — add up to <strong>200</strong> questions. 2–5 options per Q. One-by-one attempt. Timer & auto-submit. Modern UI.</div>
+      <h1>⚡ Beast Manual Quiz Builder — Final</h1>
+      <div class="sub">Manual quiz — add up to 200 Q. One-by-one attempt. Timer, auto-submit, detailed analysis with per-question timing & vibe messages.</div>
     </div>
-
     <div class="controls">
-      <div class="badge">Max Q: <strong id="maxQbadge">200</strong></div>
-      <div class="badge">Current: <strong id="currQcount">0</strong></div>
-      <button class="btn" id="newQbtn">+ New Question</button>
-      <button class="btn ghost" id="startTestBtn">▶ Start Test</button>
-      <button class="btn ghost" id="saveBtn">💾 Save</button>
-      <button class="btn ghost" id="loadBtn">📂 Load</button>
-      <button class="btn ghost" id="exportBtn">⬇ Export JSON</button>
-      <button class="btn ghost" id="importBtn">⬆ Import JSON</button>
+      <div class="badge">Max Q: <strong id="maxQ">200</strong></div>
+      <div class="badge">Total: <strong id="totalQ">0</strong></div>
+      <button class="btn" id="btnNew">+ New Q</button>
+      <button class="btn ghost" id="btnStart">▶ Start Test</button>
+      <button class="btn ghost" id="btnSave">💾 Save</button>
+      <button class="btn ghost" id="btnLoad">📂 Load</button>
+      <button class="btn ghost" id="btnExport">⬇ Export</button>
+      <button class="btn ghost" id="btnImport">⬆ Import</button>
     </div>
   </div>
 
-  <!-- Editor Panel -->
+  <!-- Editor panel (one-by-one editing) -->
   <div class="panel" id="editorPanel">
     <div class="topbar">
-      <div class="row">
-        <div style="font-weight:800">Quiz Editor</div>
-        <div class="small" style="margin-left:8px">Create & edit questions. Use per-question marks or global defaults below.</div>
+      <div>
+        <div style="font-weight:900">Quiz Editor</div>
+        <div class="small">Edit questions one-by-one. 2–5 options per question. Use per-Q marks or global defaults below.</div>
       </div>
       <div class="controls-bottom">
-        <label class="small muted">Global Marks: <input id="globalMarks" class="input" type="number" value="1" min="0" step="0.25" style="width:90px;margin-left:8px"></label>
-        <label class="small muted">Global Negative: <input id="globalNeg" class="input" type="number" value="0" min="0" step="0.25" style="width:90px;margin-left:8px"></label>
-        <label class="small muted">Time (mins): <input id="globalTime" class="input" type="number" value="5" min="0" max="999" style="width:90px;margin-left:8px"></label>
+        <label class="small muted">Global Marks: <input id="gMarks" class="input" type="number" value="1" min="0" step="0.25" style="width:90px"></label>
+        <label class="small muted">Global Neg: <input id="gNeg" class="input" type="number" value="0" min="0" step="0.25" style="width:90px"></label>
+        <label class="small muted">Time (mins): <input id="gTime" class="input" type="number" value="5" min="0" style="width:90px"></label>
       </div>
     </div>
 
     <div style="height:12px"></div>
 
-    <!-- Single question editor (shows only one at a time in editor also) -->
-    <div id="singleEditorWrap" class="qcard anim-fade">
-      <div class="flex space-between">
+    <div class="qcard" id="editorCard">
+      <div class="row" style="justify-content:space-between;align-items:center">
         <div>
-          <div style="font-weight:800">Question <span id="editorQnum">1</span></div>
-          <div class="small muted">Type question text and options. Options: min 2, max 5.</div>
+          <div style="font-weight:900">Question <span id="editorIndex">1</span></div>
+          <div class="small muted">Type question and options. Use Save to store changes.</div>
         </div>
         <div class="row">
-          <button class="btn ghost" id="prevEditor">◀ Prev</button>
-          <button class="btn ghost" id="nextEditor">Next ▶</button>
-          <button class="btn ghost" id="duplicateQ">Duplicate</button>
-          <button class="btn ghost" id="deleteQ">Delete</button>
+          <button class="btn ghost" id="btnPrev">◀ Prev</button>
+          <button class="btn ghost" id="btnNext">Next ▶</button>
+          <button class="btn ghost" id="btnDuplicate">Duplicate</button>
+          <button class="btn ghost" id="btnDelete">Delete</button>
         </div>
       </div>
 
       <div style="height:8px"></div>
+      <textarea id="inpQ" class="textarea input" placeholder="Type the question here..."></textarea>
 
-      <div>
-        <textarea id="qText" class="textarea input" placeholder="Type question here..."></textarea>
+      <div id="optsArea" style="margin-top:10px"></div>
+
+      <div style="height:8px"></div>
+      <div class="row" style="align-items:center">
+        <label class="small muted">Per-Q Marks: <input id="inpMarks" type="number" class="input" placeholder="global" style="width:110px"></label>
+        <label class="small muted">Per-Q Neg: <input id="inpNeg" type="number" class="input" placeholder="global" style="width:110px"></label>
+        <label class="small muted">Flag: <input id="inpFlag" type="checkbox" style="margin-left:8px"></label>
+        <div class="right small muted">Opts: <span id="optCount">0</span>/5</div>
       </div>
 
       <div style="height:8px"></div>
-
-      <div id="optionsArea"></div>
-
-      <div style="height:8px"></div>
-
       <div class="row">
-        <label class="small-muted">Per-Q Marks: <input id="perQMarks" type="number" class="input" placeholder="Use global if blank" style="width:120px"></label>
-        <label class="small-muted">Per-Q Negative: <input id="perQNeg" type="number" class="input" placeholder="Use global if blank" style="width:120px"></label>
-        <label class="small muted">Flag: <input id="flagQ" type="checkbox" style="margin-left:6px"></label>
-        <div class="right small muted">Options: <span id="optCount">0</span>/5</div>
-      </div>
-
-      <div style="height:8px"></div>
-
-      <div class="row">
-        <button class="btn" id="addOptBtn">+ Add Option</button>
-        <button class="btn ghost" id="shuffleOptions">Shuffle Options</button>
-        <button class="btn ghost" id="saveQbtn">Save Question</button>
+        <button class="btn" id="btnAddOpt">+ Add Option</button>
+        <button class="btn ghost" id="btnShuffle">Shuffle</button>
+        <button class="btn ghost" id="btnSaveQ">Save Question</button>
       </div>
     </div>
   </div>
 
-  <!-- Review / List of questions summary (collapsible) -->
-  <div id="listPanel" class="panel">
-    <div style="font-weight:800">Questions Overview</div>
-    <div class="small muted" style="margin-top:6px">Click any item to edit that question. You can also reorder questions by drag (future).</div>
+  <!-- List / quick overview -->
+  <div class="panel" id="listPanel">
+    <div style="font-weight:900">Quick Overview</div>
+    <div class="small muted" style="margin-top:6px">Click an item to edit it in the editor above.</div>
     <div style="height:8px"></div>
-    <div id="listWrap"></div>
+    <div id="listArea"></div>
   </div>
 
-  <!-- Attempt Modal -->
-  <div id="attemptModal" class="modal hidden" role="dialog" aria-hidden="true">
-    <div class="modal-card">
-      <div class="flex space-between">
-        <div>
-          <div style="font-weight:900;font-size:18px">Attempt Quiz</div>
-          <div class="small muted">One question at a time. Timer will auto-submit when time ends.</div>
+  <!-- Analysis area (hidden until results) -->
+  <div id="analysisPanel" class="panel hidden">
+    <div style="font-weight:900">Result Analysis</div>
+    <div style="height:12px"></div>
+    <div class="analysis">
+      <div class="analysis-left">
+        <div class="result-card" id="summaryCard">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="small muted">Total Score</div>
+              <div class="score-big" id="finalScore">0</div>
+            </div>
+            <div style="text-align:right">
+              <div class="small muted">Percentage</div>
+              <div id="finalPercent" style="font-weight:900;font-size:28px">0%</div>
+            </div>
+          </div>
+          <div class="vibe-msg" id="vibeMsg"></div>
         </div>
-        <div class="row">
-          <div class="timer small" id="timeLeft">00:00</div>
-          <button class="btn ghost" id="endEarly">End & Submit</button>
+
+        <div style="height:12px"></div>
+
+        <div class="result-card">
+          <div style="font-weight:800">Detailed per-question report</div>
+          <div style="height:8px"></div>
+          <div style="max-height:380px;overflow:auto">
+            <table class="q-table" id="qReportTable">
+              <thead><tr><th>#</th><th>Q</th><th>Your</th><th>Correct</th><th>Time</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div style="height:12px"></div>
-      <div class="progress"><i id="progBar"></i></div>
-      <div style="height:12px"></div>
-
-      <div id="attemptCard" class="attempt-card"></div>
-
-      <div style="height:12px"></div>
-      <div class="row" style="justify-content:space-between">
-        <button class="btn ghost" id="prevAttempt">◀ Prev</button>
-        <div class="row">
-          <button class="btn ghost" id="markReview">Flag/Review</button>
-          <button class="btn ghost" id="nextAttempt">Next ▶</button>
+      <div class="analysis-right">
+        <div class="result-card" id="statsCard">
+          <div style="font-weight:800">Summary</div>
+          <div style="height:8px"></div>
+          <div class="small muted">Total questions: <strong id="statTotal">0</strong></div>
+          <div class="small muted">Correct: <strong id="statCorrect">0</strong></div>
+          <div class="small muted">Wrong: <strong id="statWrong">0</strong></div>
+          <div class="small muted">Unattempted: <strong id="statUn">0</strong></div>
+          <div style="height:10px"></div>
+          <div class="small muted">Total Time Taken: <strong id="statTime">00:00</strong></div>
+          <div style="height:12px"></div>
+          <div class="row" style="justify-content:space-between">
+            <button class="btn" id="btnBackToEditor">Back to Editor</button>
+            <button class="btn ghost" id="btnExportReport">Export Report</button>
+          </div>
         </div>
-      </div>
-
-      <div style="height:12px"></div>
-      <div class="row" style="justify-content:flex-end">
-        <button class="btn" id="submitAttemptBtn">Submit Test</button>
       </div>
     </div>
   </div>
 
-  <footer class="small muted">Built for Yash-style manual testing. Enjoy. Need changes — bol de.</footer>
+  <footer class="small muted" style="margin-top:14px">Soch Se Safar | Built by Yash Deshmukh</footer>
 </div>
 
+<!-- minimal required JS: app logic -->
 <script>
 /* =========================
-   App State & Constants
+   App State
    ========================= */
-const MAX_Q = 200; // per user request
-let quiz = { title:"Manual Quiz", questions: [] };
-let currentIndex = 0; // editor current index
-let attemptIndex = 0; // attempt current index
-let attemptAnswers = {}; // { index: 'A' }
-let attemptFlags = {}; // flagged items
-let timer = null;
+const MAX_Q = 200;
+let quiz = { title: "Manual Quiz", questions: [] };
+let editIndex = 0;
+let attemptIndex = 0;
+let attemptAnswers = {}; // { idx: {choice:'A', firstTime:ts, lastTime:ts} }
+let attemptStartTS = null;
+let questionShownTS = null;
 let totalSeconds = 0;
-let remainingSeconds = 0;
-let isAttempting = false;
+let timerInterval = null;
 
 /* =========================
    DOM refs
    ========================= */
-const maxQbadge = document.getElementById('maxQbadge');
-const currQcount = document.getElementById('currQcount');
+const totalQ = document.getElementById('totalQ');
+const btnNew = document.getElementById('btnNew');
+const btnStart = document.getElementById('btnStart');
+const btnSave = document.getElementById('btnSave');
+const btnLoad = document.getElementById('btnLoad');
+const btnExport = document.getElementById('btnExport');
+const btnImport = document.getElementById('btnImport');
 
-const newQbtn = document.getElementById('newQbtn');
-const startTestBtn = document.getElementById('startTestBtn');
-const saveBtn = document.getElementById('saveBtn');
-const loadBtn = document.getElementById('loadBtn');
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
+const gMarks = document.getElementById('gMarks');
+const gNeg = document.getElementById('gNeg');
+const gTime = document.getElementById('gTime');
 
-const globalMarks = document.getElementById('globalMarks');
-const globalNeg = document.getElementById('globalNeg');
-const globalTime = document.getElementById('globalTime');
-
-const editorQnum = document.getElementById('editorQnum');
-const qText = document.getElementById('qText');
-const optionsArea = document.getElementById('optionsArea');
-const perQMarks = document.getElementById('perQMarks');
-const perQNeg = document.getElementById('perQNeg');
-const flagQ = document.getElementById('flagQ');
-const addOptBtn = document.getElementById('addOptBtn');
-const saveQbtn = document.getElementById('saveQbtn');
-const deleteQ = document.getElementById('deleteQ');
-const prevEditor = document.getElementById('prevEditor');
-const nextEditor = document.getElementById('nextEditor');
-const duplicateQ = document.getElementById('duplicateQ');
+const editorIndex = document.getElementById('editorIndex');
+const inpQ = document.getElementById('inpQ');
+const optsArea = document.getElementById('optsArea');
+const inpMarks = document.getElementById('inpMarks');
+const inpNeg = document.getElementById('inpNeg');
+const inpFlag = document.getElementById('inpFlag');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnDuplicate = document.getElementById('btnDuplicate');
+const btnDelete = document.getElementById('btnDelete');
+const btnAddOpt = document.getElementById('btnAddOpt');
+const btnShuffle = document.getElementById('btnShuffle');
+const btnSaveQ = document.getElementById('btnSaveQ');
 const optCount = document.getElementById('optCount');
-const shuffleOptionsBtn = document.getElementById('shuffleOptions');
 
-const listWrap = document.getElementById('listWrap');
+const listArea = document.getElementById('listArea');
 
 const attemptModal = document.getElementById('attemptModal');
 const attemptCard = document.getElementById('attemptCard');
-const timeLeft = document.getElementById('timeLeft');
-const progBar = document.getElementById('progBar');
-const prevAttempt = document.getElementById('prevAttempt');
-const nextAttempt = document.getElementById('nextAttempt');
-const submitAttemptBtn = document.getElementById('submitAttemptBtn');
-const endEarly = document.getElementById('endEarly');
-const markReview = document.getElementById('markReview');
+const progBar = document.querySelector('.progress>i');
+const timeLeft = document.getElementById('timeLeft') || null;
+const btnPrevAttempt = document.getElementById('prevAttempt') || null;
+const btnNextAttempt = document.getElementById('nextAttempt') || null;
+const btnSubmitAttempt = document.getElementById('submitAttemptBtn');
+const btnEndEarly = document.getElementById('endEarly');
+const btnMarkReview = document.getElementById('markReview');
+
+const analysisPanel = document.getElementById('analysisPanel');
+const finalScoreEl = document.getElementById('finalScore');
+const finalPercentEl = document.getElementById('finalPercent');
+const vibeMsgEl = document.getElementById('vibeMsg');
+const qReportTableBody = document.querySelector('#qReportTable tbody');
+const statTotal = document.getElementById('statTotal');
+const statCorrect = document.getElementById('statCorrect');
+const statWrong = document.getElementById('statWrong');
+const statUn = document.getElementById('statUn');
+const statTime = document.getElementById('statTime');
+const btnBackToEditor = document.getElementById('btnBackToEditor');
+const btnExportReport = document.getElementById('btnExportReport');
 
 /* =========================
    Helpers
    ========================= */
 function uid(prefix='id'){ return prefix + '_' + Date.now().toString(36).slice(3) + Math.random().toString(36).slice(2,6); }
-function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-function formatTime(sec){
-  if (sec < 0) sec = 0;
-  const m = Math.floor(sec/60), s = sec%60;
-  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-}
-function updateCounts(){ currQcount.textContent = quiz.questions.length; maxQbadge.textContent = MAX_Q; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function formatTimeSec(s){ if (!s || s < 0) s=0; const m=Math.floor(s/60), sec = s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+function updateCounts(){ totalQ.textContent = quiz.questions.length; }
 
 /* =========================
-   Question Model Helpers
+   Question model helpers
    ========================= */
 function createEmptyQuestion(){
-  return {
-    id: uid('q'),
-    text: '',
-    options: [
-      { id: uid('o'), label:'A', text: '' },
-      { id: uid('o'), label:'B', text: '' }
-    ],
-    correct: null, // label like 'A'
-    marks: null,
-    negative: null,
-    flagged: false
-  };
+  return { id: uid('q'), text:'', options:[ {id:uid('o'),label:'A',text:''},{id:uid('o'),label:'B',text:''} ], correct:null, marks:null, negative:null, flagged:false };
 }
-
 function clampOptions(q){
-  if (q.options.length < 2) {
-    while (q.options.length < 2) q.options.push({ id:uid('o'), label: String.fromCharCode(65 + q.options.length), text: '' });
-  }
+  if (q.options.length < 2) while(q.options.length<2) q.options.push({id:uid('o'),label:String.fromCharCode(65+q.options.length),text:''});
   if (q.options.length > 5) q.options = q.options.slice(0,5);
-  // ensure labels
   q.options.forEach((o,i)=> o.label = String.fromCharCode(65+i));
 }
 
 /* =========================
-   Rendering Editor (single Q)
+   Rendering editor (single Q)
    ========================= */
-function renderEditorAt(index){
-  if (quiz.questions.length === 0) {
-    // create starter question
-    quiz.questions.push(createEmptyQuestion());
-  }
-  currentIndex = clamp(index, 0, quiz.questions.length-1);
-  const q = quiz.questions[currentIndex];
-  editorQnum.textContent = currentIndex + 1;
-  qText.value = q.text;
-  perQMarks.value = q.marks !== null ? q.marks : '';
-  perQNeg.value = q.negative !== null ? q.negative : '';
-  flagQ.checked = q.flagged || false;
-  renderOptions(q);
+function renderEditor(idx=0){
+  if (!quiz.questions.length) quiz.questions.push(createEmptyQuestion());
+  editIndex = clamp(idx, 0, quiz.questions.length-1);
+  const q = quiz.questions[editIndex];
+  editorIndex.textContent = editIndex+1;
+  inpQ.value = q.text;
+  inpMarks.value = q.marks !== null ? q.marks : '';
+  inpNeg.value = q.negative !== null ? q.negative : '';
+  inpFlag.checked = !!q.flagged;
+  renderOptionsUI(q);
   updateCounts();
   renderList();
-  highlightListItem(currentIndex);
 }
 
-function renderOptions(q){
+function renderOptionsUI(q){
   clampOptions(q);
-  optionsArea.innerHTML = '';
-  q.options.forEach((opt, idx) => {
+  optsArea.innerHTML = '';
+  q.options.forEach((opt, i)=>{
     const row = document.createElement('div');
     row.className = 'opt-row';
     row.dataset.optid = opt.id;
-    row.innerHTML = `
-      <input type="radio" name="corr" ${q.correct===opt.label ? 'checked' : ''} value="${opt.label}">
-      <input class="opt-input" data-optid="${opt.id}" value="${escapeHtml(opt.text)}" placeholder="Option ${opt.label} text">
-      <input class="small-ghost" style="width:54px;text-align:center" value="${opt.label}">
-      <button class="btn ghost del-opt">Del</button>
-    `;
-    optionsArea.appendChild(row);
+    row.innerHTML = `<input type="radio" name="correct" ${q.correct===opt.label ? 'checked' : ''} value="${opt.label}">
+      <input class="opt-input" data-optid="${opt.id}" value="${opt.text}" placeholder="Option ${opt.label}">
+      <input class="small-ghost" style="width:44px;text-align:center" value="${opt.label}">
+      <button class="btn ghost delOpt">Del</button>`;
+    optsArea.appendChild(row);
 
-    // listeners
-    row.querySelector('input[type=radio]').addEventListener('change', ()=>{
-      q.correct = opt.label;
-      renderList();
-    });
-    row.querySelector('.opt-input').addEventListener('input', (e)=> {
-      opt.text = e.target.value;
-      renderList();
-    });
-    row.querySelector('.small-ghost').addEventListener('input', (e)=>{
+    row.querySelector('input[type=radio]').addEventListener('change', ()=> { q.correct = opt.label; renderList(); });
+    row.querySelector('.opt-input').addEventListener('input', (e)=> { opt.text = e.target.value; renderList(); });
+    row.querySelector('.small-ghost').addEventListener('input', (e)=> {
       opt.label = e.target.value.toUpperCase().slice(0,2) || opt.label;
-      // re-label all options to keep A,B,C in order
-      q.options.forEach((oo,i)=> oo.label = String.fromCharCode(65+i));
-      renderOptions(q);
+      q.options.forEach((oo,ii)=> oo.label = String.fromCharCode(65+ii));
+      renderOptionsUI(q);
       renderList();
     });
-    row.querySelector('.del-opt').addEventListener('click', ()=>{
-      if (q.options.length <= 2) { alert('Minimum 2 options required'); return; }
+    row.querySelector('.delOpt').addEventListener('click', ()=>{
+      if (q.options.length <= 2) return alert('Minimum 2 options required.');
       q.options = q.options.filter(o=>o.id !== opt.id);
       if (q.correct === opt.label) q.correct = null;
-      renderOptions(q);
+      renderOptionsUI(q);
       renderList();
     });
   });
@@ -360,384 +351,395 @@ function renderOptions(q){
 }
 
 /* =========================
-   Editor Controls (buttons)
+   Editor Controls
    ========================= */
-newQbtn.addEventListener('click', ()=>{
-  if (quiz.questions.length >= MAX_Q) {
-    alert('Too many questions — cannot add more than ' + MAX_Q + '.');
-    return;
-  }
-  quiz.questions.push(createEmptyQuestion());
-  renderEditorAt(quiz.questions.length - 1);
-});
-
-document.getElementById('saveQbtn').addEventListener('click', ()=>{
-  saveCurrentEditor();
+document.getElementById('btnSaveQ').addEventListener('click', ()=> {
+  saveCurrentQuestion();
   alert('Question saved.');
 });
-
-function saveCurrentEditor(){
-  const q = quiz.questions[currentIndex];
-  q.text = qText.value.trim();
-  q.marks = perQMarks.value === '' ? null : parseFloat(perQMarks.value);
-  q.negative = perQNeg.value === '' ? null : parseFloat(perQNeg.value);
-  q.flagged = flagQ.checked;
-  // ensure each option syncs
-  const rows = optionsArea.querySelectorAll('.opt-row');
+function saveCurrentQuestion(){
+  const q = quiz.questions[editIndex];
+  q.text = inpQ.value.trim();
+  q.marks = inpMarks.value === '' ? null : parseFloat(inpMarks.value);
+  q.negative = inpNeg.value === '' ? null : parseFloat(inpNeg.value);
+  q.flagged = inpFlag.checked;
+  // sync options values
+  const rows = optsArea.querySelectorAll('.opt-row');
   const newOpts = [];
-  rows.forEach((row, idx)=>{
-    const id = row.dataset.optid || uid('o');
-    const label = String.fromCharCode(65 + idx);
-    const text = row.querySelector('.opt-input').value;
+  rows.forEach((r, i)=>{
+    const id = r.dataset.optid || uid('o');
+    const label = String.fromCharCode(65 + i);
+    const text = r.querySelector('.opt-input').value;
     newOpts.push({ id, label, text });
   });
   q.options = newOpts;
-  // if previously correct but label changed, try to keep same index
-  if (q.correct){
-    if (!q.options.some(o=>o.label === q.correct)) q.correct = null;
-  }
+  // if correct invalid now, reset
+  if (q.correct && !q.options.some(o=>o.label===q.correct)) q.correct = null;
   clampOptions(q);
   renderList();
 }
 
-/* Prev/Next editor */
-prevEditor.addEventListener('click', ()=>{
-  saveCurrentEditor();
-  if (currentIndex > 0) renderEditorAt(currentIndex - 1);
+btnNew.addEventListener('click', ()=>{
+  if (quiz.questions.length >= MAX_Q) return alert('Chutiye itne question ka kya karega — max ' + MAX_Q);
+  quiz.questions.push(createEmptyQuestion());
+  renderEditor(quiz.questions.length - 1);
 });
-nextEditor.addEventListener('click', ()=>{
-  saveCurrentEditor();
-  if (currentIndex < quiz.questions.length - 1) renderEditorAt(currentIndex + 1);
+document.getElementById('btnPrev').addEventListener('click', ()=> { saveCurrentQuestion(); if (editIndex>0) renderEditor(editIndex-1); });
+document.getElementById('btnNext').addEventListener('click', ()=> { saveCurrentQuestion(); if (editIndex < quiz.questions.length-1) renderEditor(editIndex+1); });
+document.getElementById('btnDuplicate').addEventListener('click', ()=> {
+  if (quiz.questions.length >= MAX_Q) return alert('Max reached');
+  saveCurrentQuestion();
+  const copy = JSON.parse(JSON.stringify(quiz.questions[editIndex]));
+  copy.id = uid('q'); copy.options = copy.options.map(o=>({ id: uid('o'), label: o.label, text: o.text }));
+  quiz.questions.splice(editIndex+1, 0, copy);
+  renderEditor(editIndex+1);
 });
-
-/* Duplicate question */
-duplicateQ.addEventListener('click', ()=>{
-  if (quiz.questions.length >= MAX_Q) { alert('Max questions reached'); return; }
-  saveCurrentEditor();
-  const q = quiz.questions[currentIndex];
-  const copy = JSON.parse(JSON.stringify(q));
-  copy.id = uid('q');
-  // ensure unique ids for options
-  copy.options = copy.options.map(o=>({ id: uid('o'), label: o.label, text: o.text }));
-  quiz.questions.splice(currentIndex+1, 0, copy);
-  renderEditorAt(currentIndex + 1);
-});
-
-/* Delete question */
-deleteQ.addEventListener('click', ()=>{
+document.getElementById('btnDelete').addEventListener('click', ()=> {
   if (!confirm('Delete this question?')) return;
-  quiz.questions.splice(currentIndex,1);
-  if (quiz.questions.length === 0) quiz.questions.push(createEmptyQuestion());
-  renderEditorAt(clamp(currentIndex,0,quiz.questions.length-1));
+  quiz.questions.splice(editIndex,1);
+  if (!quiz.questions.length) quiz.questions.push(createEmptyQuestion());
+  renderEditor(clamp(editIndex,0,quiz.questions.length-1));
 });
-
-/* Add Option */
-addOptBtn.addEventListener('click', ()=>{
-  const q = quiz.questions[currentIndex];
-  if (q.options.length >= 5) return alert('Maximum 5 options allowed.');
+btnAddOpt.addEventListener('click', ()=> {
+  const q = quiz.questions[editIndex];
+  if (q.options.length >= 5) return alert('Max 5 options allowed.');
   q.options.push({ id: uid('o'), label: String.fromCharCode(65 + q.options.length), text: '' });
-  renderOptions(q);
+  renderOptionsUI(q);
 });
-
-/* Shuffle options */
-shuffleOptionsBtn.addEventListener('click', ()=>{
-  const q = quiz.questions[currentIndex];
-  // simple Fisher-Yates on options array but maintain labels after shuffle
-  for (let i = q.options.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
-  }
-  // relabel
-  q.options.forEach((o,i)=> o.label = String.fromCharCode(65+i));
-  // reset correct (user should check)
+btnShuffle.addEventListener('click', ()=> {
+  const q = quiz.questions[editIndex];
+  // Fisher-Yates
+  for (let i=q.options.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [q.options[i],q.options[j]]=[q.options[j],q.options[i]]; }
+  q.options.forEach((o,i)=>o.label=String.fromCharCode(65+i));
   q.correct = null;
-  renderOptions(q);
-  renderList();
+  renderOptionsUI(q); renderList();
 });
 
-/* Save Button (full quiz save to local storage) */
-saveBtn.addEventListener('click', ()=>{
-  saveCurrentEditor();
-  const payload = { meta:{ savedAt: new Date().toISOString(), globalMarks: parseFloat(globalMarks.value), globalNeg: parseFloat(globalNeg.value), globalTime: parseInt(globalTime.value,10) }, quiz };
-  localStorage.setItem('beast_manual_quiz', JSON.stringify(payload));
-  alert('Quiz saved locally.');
+/* Save/load/export/import */
+document.getElementById('btnSave').addEventListener('click', ()=> {
+  saveCurrentQuestion();
+  const payload = { meta:{ savedAt: new Date().toISOString(), gMarks: parseFloat(gMarks.value), gNeg: parseFloat(gNeg.value), gTime: parseInt(gTime.value,10) }, quiz };
+  localStorage.setItem('beast_quiz_saved', JSON.stringify(payload));
+  alert('Saved locally.');
 });
-
-/* Load */
-loadBtn.addEventListener('click', ()=>{
-  const raw = localStorage.getItem('beast_manual_quiz');
-  if (!raw) { alert('No saved quiz in localStorage.'); return; }
+document.getElementById('btnLoad').addEventListener('click', ()=> {
+  const raw = localStorage.getItem('beast_quiz_saved');
+  if (!raw) return alert('No saved quiz found.');
   try {
     const obj = JSON.parse(raw);
     if (obj.quiz) quiz = obj.quiz;
     if (!quiz.questions || !quiz.questions.length) quiz.questions = [createEmptyQuestion()];
-    renderEditorAt(0);
+    renderEditor(0);
     alert('Loaded saved quiz.');
   } catch(e){ alert('Load failed'); }
 });
-
-/* Export JSON */
-exportBtn.addEventListener('click', ()=>{
-  saveCurrentEditor();
-  const out = { meta:{ createdAt: new Date().toISOString(), globalMarks: parseFloat(globalMarks.value), globalNeg: parseFloat(globalNeg.value), globalTime: parseInt(globalTime.value,10)}, quiz };
-  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+document.getElementById('btnExport').addEventListener('click', ()=> {
+  saveCurrentQuestion();
+  const out = { meta:{ exportedAt: new Date().toISOString(), gMarks:parseFloat(gMarks.value), gNeg:parseFloat(gNeg.value), gTime:parseInt(gTime.value,10) }, quiz };
+  const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'manual_quiz_export.json'; a.click();
-  URL.revokeObjectURL(url);
+  const a = document.createElement('a'); a.href = url; a.download = 'manual_quiz_export.json'; a.click(); URL.revokeObjectURL(url);
 });
-
-/* Import JSON */
-importBtn.addEventListener('click', ()=>{
+document.getElementById('btnImport').addEventListener('click', ()=> {
   const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json';
-  inp.onchange = async (e)=>{
+  inp.onchange = async (e)=> {
     const f = e.target.files[0]; if (!f) return;
     const txt = await f.text();
     try {
       const obj = JSON.parse(txt);
-      if (obj.quiz) quiz = obj.quiz;
-      else if (obj.questions) quiz = obj;
-      else alert('Invalid format');
-      renderEditorAt(0);
+      if (obj.quiz) quiz = obj.quiz; else if (obj.questions) quiz = obj; else quiz = obj;
+      if (!quiz.questions || !quiz.questions.length) quiz.questions = [createEmptyQuestion()];
+      renderEditor(0);
       alert('Imported quiz.');
     } catch(err){ alert('Import failed'); }
-  };
-  inp.click();
+  }; inp.click();
 });
 
-/* Render questions list */
+/* render quick list */
 function renderList(){
-  listWrap.innerHTML = '';
+  listArea.innerHTML = '';
   quiz.questions.forEach((q,i)=>{
-    const el = document.createElement('div');
-    el.className = 'qcard';
-    el.style.marginTop = '8px';
+    const card = document.createElement('div'); card.className='qcard';
+    const preview = q.text ? (q.text.length>80 ? q.text.slice(0,80)+'...' : q.text) : '<i>[No text]</i>';
     const opts = q.options.map(o=>`${o.label}. ${o.text}`).join(' | ');
-    el.innerHTML = `
-      <div class="flex space-between">
-        <div><strong>Q${i+1}.</strong> <span class="small muted" style="margin-left:8px">${q.text ? (q.text.length>70 ? q.text.slice(0,70)+'...' : q.text) : '<i>[No text]</i>'}</span></div>
-        <div class="row">
-          <div class="small muted">${q.correct ? 'Ans: ' + q.correct : 'No Ans'}</div>
-          <div style="width:10px"></div>
-          <button class="btn ghost" data-edit="${i}">Edit</button>
-        </div>
-      </div>
-      <div class="small muted" style="margin-top:6px">${opts}</div>
-    `;
-    listWrap.appendChild(el);
+    card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div><strong>Q${i+1}.</strong> <span class="small muted" style="margin-left:8px">${preview}</span></div>
+      <div class="row"><div class="small muted">${q.correct ? 'Ans: '+q.correct : 'No Ans'}</div><button class="btn ghost" data-edit="${i}" style="margin-left:8px">Edit</button></div>
+    </div><div class="small muted" style="margin-top:6px">${opts}</div>`;
+    listArea.appendChild(card);
   });
-  currQcount.textContent = quiz.questions.length;
-  // attach edit listeners
-  listWrap.querySelectorAll('[data-edit]').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
+  // attach edit
+  listArea.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
       const idx = parseInt(e.currentTarget.getAttribute('data-edit'),10);
-      renderEditorAt(idx);
+      renderEditor(idx);
       window.scrollTo({top:0,behavior:'smooth'});
     });
   });
-}
-
-/* highlight list item */
-function highlightListItem(idx){
-  const cards = listWrap.querySelectorAll('.qcard');
-  cards.forEach((c,i)=> c.style.boxShadow = (i===idx) ? '0 10px 30px rgba(6,182,212,0.06)' : 'none');
+  updateCounts();
 }
 
 /* =========================
-   Attempt Flow
+   Attempt flow & timing
    ========================= */
-startTestBtn.addEventListener('click', ()=>{
-  if (!quiz.questions.length) return alert('No questions to attempt. Add some first.');
-  saveCurrentEditor();
-  // prepare attempt state
+btnStart.addEventListener('click', ()=> {
+  if (!quiz.questions.length) return alert('Add questions first.');
+  saveCurrentQuestion();
+  // initialize attempt state
   attemptAnswers = {};
-  attemptFlags = {};
   attemptIndex = 0;
-  // compute totalSeconds from globalTime (minutes)
-  const mins = parseInt(globalTime.value,10) || 0;
-  totalSeconds = mins * 60;
-  remainingSeconds = totalSeconds;
-  isAttempting = true;
+  attemptStartTS = Date.now();
+  // total seconds based on gTime (minutes)
+  const mins = parseInt(gTime.value,10) || 0; totalSeconds = mins * 60;
   openAttemptModal();
 });
 
 function openAttemptModal(){
-  attemptModal.classList.remove('hidden');
+  // show modal (we reuse modal in DOM but show/hide via class)
+  document.getElementById('attemptModal').classList.remove('hidden');
   renderAttemptCard();
-  startTimer();
-  updateProgressBar();
+  startCountdown();
 }
 
 function closeAttemptModal(){
-  attemptModal.classList.add('hidden');
-  stopTimer();
-  isAttempting = false;
+  document.getElementById('attemptModal').classList.add('hidden');
+  stopCountdown();
 }
 
+/* render attempt card */
 function renderAttemptCard(){
   const q = quiz.questions[attemptIndex];
-  attemptCard.innerHTML = '';
+  const inner = document.getElementById('attemptCard');
+  inner.innerHTML = '';
   const card = document.createElement('div');
-  card.innerHTML = `<div style="font-weight:800">Q${attemptIndex+1}. ${q.text || '<i>[No text]</i>'}</div>
-    <div style="margin-top:12px" id="attOpts"></div>
-    <div style="height:8px"></div>
-    <div class="small muted">Marks: ${q.marks != null ? q.marks : globalMarks.value} | Negative: ${q.negative != null ? q.negative : globalNeg.value}</div>`;
-  attemptCard.appendChild(card);
-  const optsWrap = document.getElementById('attOpts');
+  const marksTxt = q.marks != null ? q.marks : parseFloat(gMarks.value);
+  const negTxt = q.negative != null ? q.negative : parseFloat(gNeg.value);
+  card.innerHTML = `<div style="font-weight:900;font-size:18px">Q${attemptIndex+1}. ${q.text || '<i>[No text]</i>'}</div>
+    <div style="height:10px"></div>
+    <div id="attemptOptions"></div>
+    <div style="height:10px"></div>
+    <div class="small muted">Marks: ${marksTxt} | Negative: ${negTxt}</div>`;
+  inner.appendChild(card);
+  const optsWrap = document.getElementById('attemptOptions');
   q.options.forEach(opt=>{
     const lab = document.createElement('label');
-    lab.className = 'opt-row';
-    lab.innerHTML = `<input type="radio" name="attAnswer" value="${opt.label}" ${attemptAnswers[attemptIndex]===opt.label ? 'checked' : ''}> <div style="margin-left:8px">${opt.label}. ${opt.text}</div>`;
+    lab.className='opt-row';
+    lab.innerHTML = `<input type="radio" name="attAns" value="${opt.label}" ${attemptAnswers[attemptIndex] && attemptAnswers[attemptIndex].choice===opt.label ? 'checked' : ''}> <div style="margin-left:8px">${opt.label}. ${opt.text}</div>`;
     optsWrap.appendChild(lab);
   });
-  // radio change
-  optsWrap.querySelectorAll('input[name="attAnswer"]').forEach(r=> r.addEventListener('change', (e)=>{
-    attemptAnswers[attemptIndex] = e.target.value;
-    updateProgressBar();
-  }));
-  // mark review indicator
-  if (attemptFlags[attemptIndex]) attemptCard.style.border = '2px solid rgba(255,165,0,0.12)'; else attemptCard.style.border = '';
-  // show timer
-  timeLeft.textContent = formatTime(remainingSeconds);
-  progBar.style.width = Math.round(((attemptIndex+1)/quiz.questions.length) * 100) + '%';
-}
-
-/* Next / Prev attempt */
-nextAttempt.addEventListener('click', ()=>{
-  saveAttemptAnswer();
-  if (attemptIndex < quiz.questions.length - 1) attemptIndex++;
-  renderAttemptCard();
-});
-prevAttempt.addEventListener('click', ()=>{
-  saveAttemptAnswer();
-  if (attemptIndex > 0) attemptIndex--;
-  renderAttemptCard();
-});
-function saveAttemptAnswer(){
-  // attemptAnswers updated via change events
+  // attach change listener to all radios
+  optsWrap.querySelectorAll('input[type=radio]').forEach(r=>{
+    r.addEventListener('change', (e)=>{
+      const now = Date.now();
+      if (!attemptAnswers[attemptIndex]) {
+        attemptAnswers[attemptIndex] = { choice: e.target.value, firstTime: now, lastTime: now, times: [now] };
+      } else {
+        attemptAnswers[attemptIndex].choice = e.target.value;
+        attemptAnswers[attemptIndex].lastTime = now;
+        attemptAnswers[attemptIndex].times.push(now);
+      }
+      updateProgressBar();
+    });
+  });
+  // record that question is shown now (for timing if needed)
+  questionShownTS = Date.now();
   updateProgressBar();
 }
 
-/* mark flag */
-markReview.addEventListener('click', ()=>{
-  attemptFlags[attemptIndex] = !attemptFlags[attemptIndex];
+/* next / prev within modal */
+document.getElementById('nextAttempt').addEventListener('click', ()=> {
+  // optionally save state
+  if (attemptIndex < quiz.questions.length - 1) attemptIndex++;
   renderAttemptCard();
 });
-
-/* Submit attempt */
-submitAttemptBtn.addEventListener('click', ()=>{
-  if (!confirm('Submit test now?')) return;
-  finalizeAttempt();
+document.getElementById('prevAttempt').addEventListener('click', ()=> {
+  if (attemptIndex > 0) attemptIndex--;
+  renderAttemptCard();
 });
-
-/* End early (auto-submit) */
-endEarly.addEventListener('click', ()=>{
-  if (!confirm('End test and submit?')) return;
-  finalizeAttempt();
-});
-
-/* Timer */
-function startTimer(){
-  stopTimer();
-  if (totalSeconds <= 0) {
-    // no timer
-    timeLeft.textContent = 'No time';
-    return;
-  }
-  remainingSeconds = totalSeconds;
-  timeLeft.textContent = formatTime(remainingSeconds);
-  timer = setInterval(()=>{
-    remainingSeconds--;
-    timeLeft.textContent = formatTime(remainingSeconds);
-    if (remainingSeconds <= 0) {
-      finalizeAttempt(); // auto-submit
-    }
-  }, 1000);
-}
-function stopTimer(){ if (timer) clearInterval(timer); timer=null; }
 
 /* progress update */
 function updateProgressBar(){
   const answered = Object.keys(attemptAnswers).length;
-  const percent = Math.round((answered / quiz.questions.length) * 100);
-  progBar.style.width = percent + '%';
+  const pct = Math.round((answered / quiz.questions.length) * 100);
+  progBar.style.width = pct + '%';
 }
 
-/* finalize attempt: compute score, show report, close modal */
-function finalizeAttempt(){
-  stopTimer();
-  // compute score
-  let score = 0, correct=0, wrong=0, unattempted=0;
-  const gMarks = parseFloat(globalMarks.value) || 0;
-  const gNeg = parseFloat(globalNeg.value) || 0;
-  quiz.questions.forEach((q, idx)=>{
-    const given = attemptAnswers[idx];
-    if (!given) { unattempted++; return; }
-    if (q.correct && given === q.correct) {
-      correct++;
-      const marks = (q.marks != null) ? q.marks : gMarks;
-      score += parseFloat(marks);
+/* timer (countdown) */
+function startCountdown(){
+  if (timerInterval) clearInterval(timerInterval);
+  if (totalSeconds <= 0) {
+    // no timer
+    document.getElementById('timeLeft').textContent = 'No timer';
+    return;
+  }
+  const endTS = Date.now() + totalSeconds * 1000;
+  timerInterval = setInterval(()=>{
+    const rem = Math.round((endTS - Date.now())/1000);
+    document.getElementById('timeLeft').textContent = formatTimeSec(rem);
+    if (rem <= 0) {
+      clearInterval(timerInterval);
+      autoSubmitOnTimeUp();
+    }
+  }, 500);
+}
+function stopCountdown(){ if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
+
+/* auto submit when time up */
+function autoSubmitOnTimeUp(){
+  alert('Time up! Auto-submitting test.');
+  finalizeAttempt(true);
+}
+
+/* manual submit */
+btnSubmitAttempt.addEventListener('click', ()=> {
+  if (!confirm('Submit test now?')) return;
+  finalizeAttempt(false);
+});
+
+/* finalize attempt - compute scores & show analysis */
+function finalizeAttempt(isAuto=false){
+  stopCountdown();
+  // compute per-question times and total time
+  const totalTakenSec = Math.round((Date.now() - attemptStartTS)/1000);
+  // scoring
+  let totalScore = 0, correct = 0, wrong = 0, unattempted = 0;
+  const gM = parseFloat(gMarks.value) || 0;
+  const gN = parseFloat(gNeg.value) || 0;
+
+  const reportRows = [];
+
+  quiz.questions.forEach((q, idx) => {
+    const ansObj = attemptAnswers[idx];
+    const userChoice = ansObj ? ansObj.choice : null;
+    const timeTaken = ansObj ? Math.round(((ansObj.lastTime || ansObj.firstTime) - (ansObj.firstTime || attemptStartTS))/1000) : null;
+    // if user never answered, we could compute time between first shown and leaving; but we'll show '-' for unattempted
+    let isCorrect = false;
+    if (!userChoice) { unattempted++; }
+    else if (q.correct && userChoice === q.correct) {
+      isCorrect = true; correct++;
+      const m = q.marks != null ? q.marks : gM;
+      totalScore += parseFloat(m);
     } else {
       wrong++;
-      const neg = (q.negative != null) ? q.negative : gNeg;
-      score -= parseFloat(neg);
+      const neg = q.negative != null ? q.negative : gN;
+      totalScore -= parseFloat(neg);
     }
+    reportRows.push({ idx: idx+1, qtext: q.text, user: userChoice || '-', correct: q.correct || '-', time: timeTaken });
   });
-  // show result in modal card
-  attemptCard.innerHTML = `<div style="font-weight:900">Result</div>
-    <div style="margin-top:12px">Score: <strong>${score}</strong></div>
-    <div class="small muted" style="margin-top:8px">Correct: ${correct} | Wrong: ${wrong} | Unattempted: ${unattempted} | Total: ${quiz.questions.length}</div>
-    <div style="height:10px"></div>
-    <div class="row" style="justify-content:flex-end">
-      <button class="btn" id="closeResultBtn">Close</button>
-      <button class="btn ghost" id="reviewAnswersBtn">Review Answers</button>
-    </div>`;
-  document.getElementById('closeResultBtn').addEventListener('click', ()=>{
-    closeAttemptModal();
-  });
-  document.getElementById('reviewAnswersBtn').addEventListener('click', ()=>{
-    // show review: open list with answers marked (for simplicity, navigate to list)
-    closeAttemptModal();
-    alert('Review mode — open editor and check answers (you can compare).');
-  });
-  isAttempting = false;
+
+  // compute percentage: sum of positive marks possible? We'll compute maximum possible as sum of marks for all questions (use per-q or global)
+  let maxPossible = 0;
+  quiz.questions.forEach(q => { maxPossible += (q.marks != null ? q.marks : gM); });
+  const percent = maxPossible > 0 ? Math.round(( (totalScore / maxPossible) * 100 )) : 0;
+  const pctClamped = clamp(percent, -999, 100);
+
+  // prepare analysis UI
+  showAnalysis({ totalScore, correct, wrong, unattempted, percent: pctClamped, totalTakenSec, reportRows });
+  // close modal if open
+  document.getElementById('attemptModal').classList.add('hidden');
 }
 
-/* =========================
-   Keyboard Shortcuts
-   ========================= */
+/* show analysis screen */
+function showAnalysis({ totalScore, correct, wrong, unattempted, percent, totalTakenSec, reportRows }){
+  analysisPanel.classList.remove('hidden');
+  // summary panel
+  finalScoreEl.textContent = totalScore;
+  finalPercentEl.textContent = percent + '%';
+  statTotal.textContent = quiz.questions.length;
+  statCorrect.textContent = correct;
+  statWrong.textContent = wrong;
+  statUn.textContent = unattempted;
+  statTime.textContent = formatTimeSec(totalTakenSec);
+
+  // vibe message logic and theming
+  vibeMsgEl.className = 'vibe-msg';
+  if (percent >= 100) {
+    vibeMsgEl.innerHTML = '⚡ GOD MODE ACTIVATED — kuch zindagi mein uchaad hi diya bhai 👑';
+    vibeMsgEl.classList.add('gold-text');
+    // premium style for summary card
+    document.getElementById('summaryCard').classList.add('gold-bg');
+  } else if (percent >= 90) {
+    vibeMsgEl.innerHTML = 'Bhai confirm hai — pakka ho jayega 💪💯';
+    vibeMsgEl.style.color = '#1e90ff';
+    document.getElementById('summaryCard').classList.remove('gold-bg');
+  } else if (percent >= 50) {
+    vibeMsgEl.innerHTML = 'Bhai tera selection ho jayega 😎🔥';
+    vibeMsgEl.style.color = 'lightgreen';
+    document.getElementById('summaryCard').classList.remove('gold-bg');
+  } else {
+    vibeMsgEl.innerHTML = 'भैया जी sorry, आपका नहीं हो पाएगा — bhiya ji, sorry apka ni ho payega';
+    vibeMsgEl.classList.add('sad-text');
+    document.getElementById('summaryCard').classList.remove('gold-bg');
+  }
+
+  // fill per-question table
+  qReportTableBody.innerHTML = '';
+  reportRows.forEach(r => {
+    const tr = document.createElement('tr');
+    const timeTxt = r.time === null ? '-' : (r.time + 's');
+    // color row based on correctness
+    const qObj = quiz.questions[r.idx - 1];
+    const isCorrect = r.user !== '-' && qObj.correct && r.user === qObj.correct;
+    tr.innerHTML = `<td>${r.idx}</td>
+      <td style="max-width:300px">${escapeHtml(r.qtext.length > 120 ? r.qtext.slice(0,120)+'...' : r.qtext)}</td>
+      <td>${escapeHtml(r.user)}</td>
+      <td>${escapeHtml(r.correct)}</td>
+      <td class="q-time">${timeTxt}</td>`;
+    if (isCorrect) tr.style.background = 'linear-gradient(90deg, rgba(16,185,129,0.03), transparent)';
+    else if (r.user === '-') tr.style.background = 'linear-gradient(90deg, rgba(255,200,60,0.02), transparent)';
+    else tr.style.background = 'linear-gradient(90deg, rgba(255,60,60,0.02), transparent)';
+    qReportTableBody.appendChild(tr);
+  });
+
+  // scroll analysis into view
+  analysisPanel.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* export analysis as JSON */
+btnExportReport.addEventListener('click', ()=>{
+  // build report
+  saveCurrentQuestion();
+  // reconstruct attempt report (we need to include attemptAnswers)
+  const attempt = { answers: attemptAnswers, quiz, meta:{ exportedAt: new Date().toISOString() } };
+  const blob = new Blob([JSON.stringify(attempt, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'quiz_attempt_report.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+/* back to editor from analysis */
+btnBackToEditor.addEventListener('click', ()=> {
+  analysisPanel.classList.add('hidden');
+  // keep everything as it was in editor
+  renderEditor(editIndex);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+/* utility */
+function escapeHtml(s){ if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* keyboard shortcuts for attempt navigation (when modal open) */
 document.addEventListener('keydown', (e)=>{
-  if (isAttempting && (e.key === 'ArrowRight' || e.key.toLowerCase()==='d')) { nextAttempt.click(); }
-  else if (isAttempting && (e.key === 'ArrowLeft' || e.key.toLowerCase()==='a')) { prevAttempt.click(); }
-  else if (!isAttempting && e.key === 'n') { newQbtn.click(); }
-  else if (!isAttempting && e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveBtn.click(); }
+  const modalVisible = !document.getElementById('attemptModal').classList.contains('hidden');
+  if (modalVisible) {
+    if (e.key === 'ArrowRight') document.getElementById('nextAttempt').click();
+    if (e.key === 'ArrowLeft') document.getElementById('prevAttempt').click();
+  } else {
+    if (e.key === 'n') btnNew.click();
+    if ( (e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='s') { e.preventDefault(); btnSave.click(); }
+  }
 });
 
 /* =========================
-   Misc Utilities
-   ========================= */
-function escapeHtml(s){ if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* =========================
-   Init
+   Init with one sample Q
    ========================= */
 (function init(){
-  // start with one sample question
   quiz.questions.push({
     id: uid('q'),
     text: 'Sample: Which gas do plants absorb during photosynthesis?',
-    options: [
-      { id: uid('o'), label: 'A', text: 'Oxygen' },
-      { id: uid('o'), label: 'B', text: 'Carbon Dioxide' },
-      { id: uid('o'), label: 'C', text: 'Nitrogen' }
-    ],
-    correct: 'B',
-    marks: null,
-    negative: null,
-    flagged: false
+    options: [ {id:uid('o'),label:'A',text:'Oxygen'}, {id:uid('o'),label:'B',text:'Carbon Dioxide'}, {id:uid('o'),label:'C',text:'Nitrogen'} ],
+    correct: 'B', marks: null, negative: null, flagged:false
   });
-  updateCounts();
-  renderEditorAt(0);
+  renderEditor(0);
   renderList();
 })();
 
